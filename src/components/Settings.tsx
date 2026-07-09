@@ -1,15 +1,24 @@
 import { useState } from "react";
 import { AVATARS, uid } from "../lib/format";
 import type { AppData } from "../types";
+import type { SyncMode } from "../hooks/useAppData";
+
+export interface SyncInfo {
+  mode: SyncMode;
+  familyCode: string | null;
+  leaveFamily: () => void;
+}
 
 export function Settings({
   data,
   update,
   showToast,
+  sync,
 }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   showToast: (msg: string) => void;
+  sync: SyncInfo;
 }) {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(AVATARS[0]);
@@ -46,9 +55,48 @@ export function Settings({
     showToast(pinInput ? "Parent PIN set 🔒" : "PIN removed");
   };
 
+  const [copied, setCopied] = useState(false);
+  const copyCode = async () => {
+    if (!sync.familyCode) return;
+    try {
+      await navigator.clipboard.writeText(sync.familyCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard blocked — the code is on screen to read */
+    }
+  };
+
   return (
     <div className="fr-card fr-pad">
-      <h3 className="fr-h3" style={{ marginTop: 0 }}>
+      {sync.mode === "synced" && sync.familyCode && (
+        <>
+          <h3 className="fr-h3" style={{ marginTop: 0 }}>
+            Family sync
+          </h3>
+          <p className="fr-muted">
+            This family is synced across phones. Share the code so others can join.
+          </p>
+          <div className="fr-code-box small">{sync.familyCode}</div>
+          <div className="fr-add-row">
+            <button className="fr-mini-btn" onClick={copyCode}>
+              {copied ? "Copied ✓" : "Copy code"}
+            </button>
+            <button
+              className="fr-mini-btn danger"
+              onClick={() => {
+                if (window.confirm("Leave this family on this phone? You can rejoin with the code.")) {
+                  sync.leaveFamily();
+                }
+              }}
+            >
+              Leave family
+            </button>
+          </div>
+        </>
+      )}
+
+      <h3 className="fr-h3" style={sync.mode === "synced" ? undefined : { marginTop: 0 }}>
         Family members
       </h3>
       {data.kids.map((k) => (

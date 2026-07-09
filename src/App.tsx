@@ -1,28 +1,33 @@
 import { useEffect, useRef, useState } from "react";
+import { FamilyGate } from "./components/FamilyGate";
 import { InstallPrompt } from "./components/InstallPrompt";
 import { KidView } from "./components/KidView";
 import { Onboarding } from "./components/Onboarding";
 import { ParentView } from "./components/ParentView";
 import { PinGate } from "./components/PinGate";
-import { loadData, saveData } from "./lib/storage";
-import type { AppData } from "./types";
+import { useAppData } from "./hooks/useAppData";
 
 type Mode = "kid" | "parent";
 
 function App() {
-  const [data, setData] = useState<AppData>(() => loadData());
+  const {
+    data,
+    update,
+    mode: syncMode,
+    familyCode,
+    syncAvailable,
+    connecting,
+    createFamily,
+    joinFamily,
+    leaveFamily,
+  } = useAppData();
+
   const [mode, setMode] = useState<Mode>("kid");
   const [pinGate, setPinGate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  useEffect(() => {
-    saveData(data);
-  }, [data]);
-
-  const update = (fn: (d: AppData) => AppData) => {
-    setData((prev) => fn(structuredClone(prev)));
-  };
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -31,9 +36,12 @@ function App() {
   };
 
   const tryParentMode = () => {
-    if (data.pin) setPinGate(true);
+    if (data?.pin) setPinGate(true);
     else setMode("parent");
   };
+
+  // Sync is on, but this device hasn't joined a family yet → show the gate.
+  const needsFamily = syncAvailable && !familyCode;
 
   return (
     <div className="fr-app">
@@ -45,31 +53,51 @@ function App() {
             <div className="fr-logo-sub">ask, explain, get a yes (maybe)</div>
           </div>
         </div>
-        <div className="fr-mode">
-          <button className={"fr-mode-btn" + (mode === "kid" ? " on" : "")} onClick={() => setMode("kid")}>
-            Kids
-          </button>
-          <button className={"fr-mode-btn" + (mode === "parent" ? " on" : "")} onClick={tryParentMode}>
-            Parents
-          </button>
-        </div>
+        {!needsFamily && (
+          <div className="fr-mode">
+            <button className={"fr-mode-btn" + (mode === "kid" ? " on" : "")} onClick={() => setMode("kid")}>
+              Kids
+            </button>
+            <button className={"fr-mode-btn" + (mode === "parent" ? " on" : "")} onClick={tryParentMode}>
+              Parents
+            </button>
+          </div>
+        )}
       </header>
 
-      {data.kids.length > 0 && (
-        <div className="fr-main">
-          <InstallPrompt />
-        </div>
-      )}
-
-      {data.kids.length === 0 ? (
-        <Onboarding update={update} />
-      ) : mode === "kid" ? (
-        <KidView data={data} update={update} />
+      {needsFamily ? (
+        <FamilyGate onCreate={createFamily} onJoin={joinFamily} />
+      ) : connecting || !data ? (
+        <main className="fr-main">
+          <div className="fr-card fr-pad fr-empty">
+            <div className="fr-done-emoji">🔄</div>
+            <p className="fr-muted">Connecting to your family…</p>
+          </div>
+        </main>
       ) : (
-        <ParentView data={data} update={update} showToast={showToast} />
+        <>
+          {data.kids.length > 0 && (
+            <div className="fr-main">
+              <InstallPrompt />
+            </div>
+          )}
+
+          {data.kids.length === 0 ? (
+            <Onboarding update={update} />
+          ) : mode === "kid" ? (
+            <KidView data={data} update={update} />
+          ) : (
+            <ParentView
+              data={data}
+              update={update}
+              showToast={showToast}
+              sync={{ mode: syncMode, familyCode, leaveFamily }}
+            />
+          )}
+        </>
       )}
 
-      {pinGate && (
+      {pinGate && data && (
         <PinGate
           pin={data.pin}
           onSuccess={() => {

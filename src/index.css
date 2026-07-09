@@ -264,6 +264,22 @@ body {
 }
 @keyframes fr-pop { from { opacity: 0; transform: translate(-50%, 8px); } }
 
+/* family gate / sync */
+.fr-gate-emoji { font-size: 48px; text-align: center; margin-bottom: 6px; }
+.fr-code-box {
+  font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 26px;
+  letter-spacing: 2px; text-align: center; color: var(--ink);
+  background: var(--mint); border: 2px dashed var(--green);
+  border-radius: 14px; padding: 16px 12px; margin: 6px 0 12px;
+  overflow-wrap: anywhere;
+}
+.fr-code-box.small { font-size: 18px; padding: 12px; letter-spacing: 1px; margin-bottom: 10px; }
+.fr-copy-btn { display: block; margin: 0 auto 14px; }
+.fr-code-input {
+  text-align: center; font-family: 'Baloo 2', cursive; font-weight: 800;
+  font-size: 20px; letter-spacing: 2px; margin-bottom: 12px; text-transform: uppercase;
+}
+
 /* install banner */
 .fr-install {
   display: flex; align-items: center; gap: 12px;

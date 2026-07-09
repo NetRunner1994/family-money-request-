@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CATEGORIES, fmt, haptic, timeAgo } from "../lib/format";
 import type { AppData, Kid, MoneyRequest, RequestStatus } from "../types";
 import { RequestCard } from "./RequestCard";
-import { Settings } from "./Settings";
+import { Settings, type SyncInfo } from "./Settings";
 
 type Tab = "inbox" | "history" | "settings";
 
@@ -10,10 +10,12 @@ export function ParentView({
   data,
   update,
   showToast,
+  sync,
 }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   showToast: (msg: string) => void;
+  sync: SyncInfo;
 }) {
   const [tab, setTab] = useState<Tab>("inbox");
   const pending = data.requests.filter((r) => r.status === "pending").sort((a, b) => a.createdAt - b.createdAt);
@@ -75,7 +77,9 @@ export function ParentView({
         </section>
       )}
 
-      {tab === "settings" && <Settings data={data} update={update} showToast={showToast} />}
+      {tab === "settings" && (
+        <Settings data={data} update={update} showToast={showToast} sync={sync} />
+      )}
     </main>
   );
 }
