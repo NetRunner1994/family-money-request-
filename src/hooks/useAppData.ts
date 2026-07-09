@@ -5,8 +5,10 @@ import {
   runTransaction,
   setDoc,
 } from "firebase/firestore";
+import type { User } from "../lib/auth";
 import { ensureSignedIn, firebaseEnabled, getDb } from "../lib/firebase";
 import { pruneOldRequests } from "../lib/retention";
+import { getUserFamily, setUserFamily } from "../lib/userFamily";
 import {
   loadData,
   loadFamilyCode,
@@ -36,7 +38,7 @@ const familyDoc = (code: string) => {
   return db ? doc(db, "families", code) : null;
 };
 
-export function useAppData(): UseAppData {
+export function useAppData(user: User | null, authReady: boolean): UseAppData {
   const [familyCode, setFamilyCode] = useState<string | null>(() =>
     firebaseEnabled ? loadFamilyCode() : null
   );
@@ -173,6 +175,25 @@ export function useAppData(): UseAppData {
     setConnecting(false);
     setData(loadData());
   }, []);
+
+  // Tie the family to the signed-in account so it "follows" the person:
+  //  - if they're in a family, remember it on their account;
+  //  - if they're signed in but this device has no family, restore the one
+  //    their account remembers.
+  useEffect(() => {
+    if (!firebaseEnabled || !authReady || !user) return;
+    if (familyCode) {
+      void setUserFamily(user.uid, familyCode);
+      return;
+    }
+    let cancelled = false;
+    getUserFamily(user.uid).then((code) => {
+      if (!cancelled && code) joinFamily(code);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, user, familyCode, joinFamily]);
 
   return {
     data,

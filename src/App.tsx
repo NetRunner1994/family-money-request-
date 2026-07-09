@@ -13,6 +13,7 @@ import { firebaseEnabled } from "./lib/firebase";
 type Mode = "kid" | "parent";
 
 function App() {
+  const { user, ready: authReady } = useAuth();
   const {
     data,
     update,
@@ -23,8 +24,7 @@ function App() {
     createFamily,
     joinFamily,
     leaveFamily,
-  } = useAppData();
-  const { user } = useAuth();
+  } = useAppData(user, authReady);
 
   const [mode, setMode] = useState<Mode>("kid");
   const [pinGate, setPinGate] = useState(false);
