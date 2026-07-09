@@ -68,18 +68,25 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     if (!synced && data) seedRef.current = data;
   }, [synced, data]);
 
-  // Subscribe to the family document in synced mode.
+  // Subscribe to the family document in synced mode. Waits for authReady so
+  // it never fires before Firebase has finished restoring a saved sign-in —
+  // otherwise this could kick off an anonymous session (for kid devices)
+  // that wins the race and overwrites a real Google session on every reload.
   useEffect(() => {
-    if (!firebaseEnabled || !familyCode) return;
+    if (!firebaseEnabled || !familyCode || !authReady) return;
     let unsub: (() => void) | undefined;
     let cancelled = false;
     setConnecting(true);
 
     (async () => {
-      try {
-        await ensureSignedIn();
-      } catch (e) {
-        console.error("anonymous sign-in failed", e);
+      // Only fall back to an anonymous session if there's truly no signed-in
+      // grown-up — a real sign-in already satisfies the Firestore rules.
+      if (!user) {
+        try {
+          await ensureSignedIn();
+        } catch (e) {
+          console.error("anonymous sign-in failed", e);
+        }
       }
       if (cancelled) return;
       const ref = familyDoc(familyCode);
@@ -107,7 +114,7 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
       cancelled = true;
       unsub?.();
     };
-  }, [familyCode]);
+  }, [familyCode, authReady, user]);
 
   const update = useCallback(
     (fn: (d: AppData) => AppData) => {
