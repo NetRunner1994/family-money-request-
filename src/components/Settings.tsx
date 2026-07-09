@@ -14,11 +14,15 @@ export function Settings({
   update,
   showToast,
   sync,
+  isAdmin,
+  adminName,
 }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   showToast: (msg: string) => void;
   sync: SyncInfo;
+  isAdmin: boolean;
+  adminName: string;
 }) {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(AVATARS[0]);
@@ -99,6 +103,12 @@ export function Settings({
 
   return (
     <div className="fr-card fr-pad">
+      {sync.mode === "synced" && (
+        <div className={"fr-admin-badge" + (isAdmin ? "" : " not-admin")}>
+          {isAdmin ? "👑 You're the family admin" : `👑 ${adminName} is the family admin`}
+        </div>
+      )}
+
       {sync.mode === "synced" && sync.familyCode && (
         <>
           <h3 className="fr-h3" style={{ marginTop: 0 }}>
@@ -129,17 +139,20 @@ export function Settings({
       <h3 className="fr-h3" style={sync.mode === "synced" ? undefined : { marginTop: 0 }}>
         Kids
       </h3>
-      {sync.mode === "synced" && (
+      {sync.mode === "synced" && isAdmin && (
         <p className="fr-muted">
           Give each kid a 4-digit PIN so only they can use the app as themselves
           on their own phone.
         </p>
       )}
+      {!isAdmin && (
+        <p className="fr-muted">Only {adminName} can add, remove, or change kids.</p>
+      )}
       {data.kids.map((k) => (
         <div key={k.id} className="fr-owed-row">
           <span className="fr-kid-emoji">{k.avatar}</span>
           <span className="fr-owed-name">{k.name}</span>
-          {sync.mode === "synced" && (
+          {sync.mode === "synced" && isAdmin && (
             <input
               className="fr-input fr-kid-pin"
               placeholder="PIN"
@@ -149,87 +162,104 @@ export function Settings({
               onChange={(e) => setKidPin(k.id, e.target.value.replace(/\D/g, ""))}
             />
           )}
-          <button className="fr-mini-btn danger" onClick={() => removeKid(k.id)}>
-            Remove
-          </button>
+          {isAdmin && (
+            <button className="fr-mini-btn danger" onClick={() => removeKid(k.id)}>
+              Remove
+            </button>
+          )}
         </div>
       ))}
-      <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
-        {AVATARS.map((a) => (
-          <button key={a} className={"fr-avatar-opt" + (avatar === a ? " picked" : "")} onClick={() => setAvatar(a)}>
-            {a}
-          </button>
-        ))}
-      </div>
-      <div className="fr-add-row">
-        <input
-          className="fr-input"
-          placeholder="New kid's name"
-          value={name}
-          maxLength={20}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <button className="fr-mini-btn" onClick={addKid}>
-          Add
-        </button>
-      </div>
+      {isAdmin && (
+        <>
+          <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
+            {AVATARS.map((a) => (
+              <button key={a} className={"fr-avatar-opt" + (avatar === a ? " picked" : "")} onClick={() => setAvatar(a)}>
+                {a}
+              </button>
+            ))}
+          </div>
+          <div className="fr-add-row">
+            <input
+              className="fr-input"
+              placeholder="New kid's name"
+              value={name}
+              maxLength={20}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <button className="fr-mini-btn" onClick={addKid}>
+              Add
+            </button>
+          </div>
+        </>
+      )}
 
       <h3 className="fr-h3">Grown-ups &amp; friends</h3>
       <p className="fr-muted">
         People who can request money from each other in the “Grown-ups” tab.
+        {!isAdmin && ` Only ${adminName} can add or remove people here.`}
       </p>
       {data.members.map((m) => (
         <div key={m.id} className="fr-owed-row">
           <span className="fr-kid-emoji">{m.avatar}</span>
           <span className="fr-owed-name">{m.name}</span>
-          <button className="fr-mini-btn danger" onClick={() => removeMember(m.id)}>
-            Remove
-          </button>
+          {isAdmin && (
+            <button className="fr-mini-btn danger" onClick={() => removeMember(m.id)}>
+              Remove
+            </button>
+          )}
         </div>
       ))}
-      <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
-        {AVATARS.map((a) => (
-          <button
-            key={a}
-            className={"fr-avatar-opt" + (memberAvatar === a ? " picked" : "")}
-            onClick={() => setMemberAvatar(a)}
-          >
-            {a}
-          </button>
-        ))}
-      </div>
-      <div className="fr-add-row">
-        <input
-          className="fr-input"
-          placeholder="Grown-up or friend's name"
-          value={memberName}
-          maxLength={20}
-          onChange={(e) => setMemberName(e.target.value)}
-        />
-        <button className="fr-mini-btn" onClick={addMember}>
-          Add
-        </button>
-      </div>
+      {isAdmin && (
+        <>
+          <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
+            {AVATARS.map((a) => (
+              <button
+                key={a}
+                className={"fr-avatar-opt" + (memberAvatar === a ? " picked" : "")}
+                onClick={() => setMemberAvatar(a)}
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+          <div className="fr-add-row">
+            <input
+              className="fr-input"
+              placeholder="Grown-up or friend's name"
+              value={memberName}
+              maxLength={20}
+              onChange={(e) => setMemberName(e.target.value)}
+            />
+            <button className="fr-mini-btn" onClick={addMember}>
+              Add
+            </button>
+          </div>
+        </>
+      )}
 
-      <h3 className="fr-h3">Parent PIN</h3>
-      <p className="fr-muted">
-        {data.pin
-          ? "A PIN is set. Kids can't sneak into parent mode."
-          : "No PIN yet. Any kid can tap into parent mode and approve their own requests. You've been warned."}
-      </p>
-      <div className="fr-add-row">
-        <input
-          className="fr-input"
-          placeholder={data.pin ? "New 4-digit PIN (blank to remove)" : "4-digit PIN"}
-          value={pinInput}
-          inputMode="numeric"
-          maxLength={4}
-          onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
-        />
-        <button className="fr-mini-btn" onClick={savePin}>
-          Save
-        </button>
-      </div>
+      {sync.mode !== "synced" && (
+        <>
+          <h3 className="fr-h3">Parent PIN</h3>
+          <p className="fr-muted">
+            {data.pin
+              ? "A PIN is set. Kids can't sneak into parent mode."
+              : "No PIN yet. Any kid can tap into parent mode and approve their own requests. You've been warned."}
+          </p>
+          <div className="fr-add-row">
+            <input
+              className="fr-input"
+              placeholder={data.pin ? "New 4-digit PIN (blank to remove)" : "4-digit PIN"}
+              value={pinInput}
+              inputMode="numeric"
+              maxLength={4}
+              onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ""))}
+            />
+            <button className="fr-mini-btn" onClick={savePin}>
+              Save
+            </button>
+          </div>
+        </>
+      )}
 
       <p className="fr-muted" style={{ marginTop: 20, marginBottom: 0, fontSize: 12 }}>
         To save space, paid and declined requests are cleared automatically after

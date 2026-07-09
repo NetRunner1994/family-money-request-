@@ -54,6 +54,9 @@ export interface AppData {
   /** Maps a signed-in grown-up's account id (Firebase uid) to their member id,
    *  so the app knows who they are automatically after signing in. */
   memberAuth: Record<string, string>;
+  /** Firebase uid of the family admin (whoever created the family). Only the
+   *  admin can add/remove kids, set kid PINs, or add/remove members. */
+  adminUid: string | null;
 }
 
 export const emptyData: AppData = {
@@ -63,6 +66,7 @@ export const emptyData: AppData = {
   peerRequests: [],
   pin: null,
   memberAuth: {},
+  adminUid: null,
 };
 
 /** Fill in any missing fields so data saved by older versions (which had no
@@ -75,5 +79,6 @@ export function normalizeData(d: Partial<AppData> | null | undefined): AppData {
     peerRequests: d?.peerRequests ?? [],
     pin: d?.pin ?? null,
     memberAuth: d?.memberAuth ?? {},
+    adminUid: d?.adminUid ?? null,
   };
 }
