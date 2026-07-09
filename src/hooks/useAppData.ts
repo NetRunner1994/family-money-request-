@@ -28,9 +28,26 @@ export interface UseAppData {
   syncAvailable: boolean;
   /** Waiting on the first cloud snapshot. */
   connecting: boolean;
+  /** Set if connecting to the family failed — connecting will be false but
+   *  data will still be null, so callers must check this separately to avoid
+   *  showing an infinite "Connecting…" spinner on a real failure. */
+  connectError: string | null;
+  retryConnect: () => void;
   createFamily: (code: string, adminUid: string | null) => Promise<void>;
   joinFamily: (code: string) => void;
   leaveFamily: () => void;
+}
+
+function describeConnectError(e: unknown): string {
+  const code = (e as { code?: string })?.code ?? "";
+  if (code.includes("permission-denied")) {
+    return "Access denied by the database rules. (permission-denied)";
+  }
+  if (code.includes("unavailable") || code.includes("network")) {
+    return "Couldn't reach the server — check your internet connection. (unavailable)";
+  }
+  if (code) return `Connection failed (${code}).`;
+  return "Connection failed. Please try again.";
 }
 
 const familyDoc = (code: string) => {
@@ -54,6 +71,9 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     return pruned;
   });
   const [connecting, setConnecting] = useState(synced);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
+  const retryConnect = useCallback(() => setRetryToken((n) => n + 1), []);
 
   // Hold the latest seed data (local device data) so "create family" can carry
   // existing kids/requests into the new shared family instead of losing them.
@@ -77,6 +97,7 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     let unsub: (() => void) | undefined;
     let cancelled = false;
     setConnecting(true);
+    setConnectError(null);
 
     (async () => {
       // Only fall back to an anonymous session if there's truly no signed-in
@@ -86,6 +107,11 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
           await ensureSignedIn();
         } catch (e) {
           console.error("anonymous sign-in failed", e);
+          if (!cancelled) {
+            setConnectError(describeConnectError(e));
+            setConnecting(false);
+          }
+          return;
         }
       }
       if (cancelled) return;
@@ -98,13 +124,17 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
             setData(normalizeData(snap.data() as Partial<AppData>));
           } else {
             // Family doc doesn't exist yet — create an empty one.
-            void setDoc(ref, { ...emptyData });
+            void setDoc(ref, { ...emptyData }).catch((e) => {
+              console.error("create family doc failed", e);
+              setConnectError(describeConnectError(e));
+            });
             setData({ ...emptyData });
           }
           setConnecting(false);
         },
         (err) => {
           console.error("sync listener error", err);
+          setConnectError(describeConnectError(err));
           setConnecting(false);
         }
       );
@@ -114,7 +144,7 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
       cancelled = true;
       unsub?.();
     };
-  }, [familyCode, authReady, user]);
+  }, [familyCode, authReady, user, retryToken]);
 
   const update = useCallback(
     (fn: (d: AppData) => AppData) => {
@@ -168,6 +198,7 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     saveFamilyCode(code);
     setData(null);
     setConnecting(true);
+    setConnectError(null);
     setFamilyCode(code);
   }, []);
 
@@ -175,10 +206,12 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     saveFamilyCode(code);
     setData(null);
     setConnecting(true);
+    setConnectError(null);
     setFamilyCode(code);
   }, []);
 
   const leaveFamily = useCallback(() => {
+    setConnectError(null);
     saveFamilyCode(null);
     setFamilyCode(null);
     setConnecting(false);
@@ -211,6 +244,8 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     familyCode,
     syncAvailable: firebaseEnabled,
     connecting,
+    connectError,
+    retryConnect,
     createFamily,
     joinFamily,
     leaveFamily,
