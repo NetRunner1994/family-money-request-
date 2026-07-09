@@ -30,6 +30,22 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // Apply new versions immediately instead of waiting for every tab to
+        // close — the new service worker takes over and old caches are purged,
+        // so a normal reload always gets the latest app.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+        // Never serve a stale index.html; always try the network for the page
+        // shell so a fresh deploy is picked up right away.
+        navigateFallback: '/family-money-request-/index.html',
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: { cacheName: 'html-shell' },
+          },
+        ],
       },
       devOptions: {
         enabled: true,
