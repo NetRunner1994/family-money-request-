@@ -8,17 +8,21 @@ type Step = "amount" | "reason" | "done";
 export function KidView({
   data,
   update,
+  lockedKidId,
 }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
+  /** When set, the view is locked to this one kid (no picker) — used once a
+   *  kid has identified themselves. */
+  lockedKidId?: string;
 }) {
-  const [kidId, setKidId] = useState(data.kids[0]?.id);
+  const [kidId, setKidId] = useState(lockedKidId ?? data.kids[0]?.id);
   const [step, setStep] = useState<Step>("amount");
   const [amountStr, setAmountStr] = useState("0");
   const [reason, setReason] = useState("");
   const [category, setCategory] = useState<string | null>(null);
 
-  const kid = data.kids.find((k) => k.id === kidId) || data.kids[0];
+  const kid = data.kids.find((k) => k.id === (lockedKidId ?? kidId)) || data.kids[0];
   const amount = parseFloat(amountStr) || 0;
 
   const myRequests = data.requests
@@ -77,21 +81,30 @@ export function KidView({
 
   return (
     <main className="fr-main">
-      <div className="fr-kid-row">
-        {data.kids.map((k) => (
-          <button
-            key={k.id}
-            className={"fr-kid-chip" + (k.id === kid.id ? " on" : "")}
-            onClick={() => {
-              setKidId(k.id);
-              reset();
-            }}
-          >
-            <span className="fr-kid-emoji">{k.avatar}</span>
-            {k.name}
-          </button>
-        ))}
-      </div>
+      {lockedKidId ? (
+        <div className="fr-kid-row">
+          <div className="fr-kid-chip on" style={{ cursor: "default" }}>
+            <span className="fr-kid-emoji">{kid.avatar}</span>
+            {kid.name}
+          </div>
+        </div>
+      ) : (
+        <div className="fr-kid-row">
+          {data.kids.map((k) => (
+            <button
+              key={k.id}
+              className={"fr-kid-chip" + (k.id === kid.id ? " on" : "")}
+              onClick={() => {
+                setKidId(k.id);
+                reset();
+              }}
+            >
+              <span className="fr-kid-emoji">{k.avatar}</span>
+              {k.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {owed > 0 && (
         <div className="fr-owed">

@@ -45,6 +45,14 @@ export function Settings({
     });
   };
 
+  const setKidPin = (id: string, pin: string) => {
+    update((d) => {
+      const k = d.kids.find((x) => x.id === id);
+      if (k) k.pin = pin || null;
+      return d;
+    });
+  };
+
   const addMember = () => {
     if (!memberName.trim()) return;
     update((d) => {
@@ -121,10 +129,26 @@ export function Settings({
       <h3 className="fr-h3" style={sync.mode === "synced" ? undefined : { marginTop: 0 }}>
         Kids
       </h3>
+      {sync.mode === "synced" && (
+        <p className="fr-muted">
+          Give each kid a 4-digit PIN so only they can use the app as themselves
+          on their own phone.
+        </p>
+      )}
       {data.kids.map((k) => (
         <div key={k.id} className="fr-owed-row">
           <span className="fr-kid-emoji">{k.avatar}</span>
           <span className="fr-owed-name">{k.name}</span>
+          {sync.mode === "synced" && (
+            <input
+              className="fr-input fr-kid-pin"
+              placeholder="PIN"
+              value={k.pin ?? ""}
+              inputMode="numeric"
+              maxLength={4}
+              onChange={(e) => setKidPin(k.id, e.target.value.replace(/\D/g, ""))}
+            />
+          )}
           <button className="fr-mini-btn danger" onClick={() => removeKid(k.id)}>
             Remove
           </button>

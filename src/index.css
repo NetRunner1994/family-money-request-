@@ -232,6 +232,7 @@ body {
 .fr-mini-btn.danger { background: #FFE3E3; color: #C03030; }
 .fr-add-row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
 .fr-add-row .fr-input { flex: 1; }
+.fr-kid-pin { width: 68px; flex: none; text-align: center; padding: 8px; font-size: 15px; }
 
 /* onboarding */
 .fr-onboard { padding: 24px; margin-top: 10px; }

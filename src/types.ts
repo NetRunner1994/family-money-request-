@@ -2,6 +2,9 @@ export interface Kid {
   id: string;
   name: string;
   avatar: string;
+  /** Optional short PIN a kid enters to use the app as themselves on their
+   *  own device. Keeps siblings from posing as each other. */
+  pin?: string | null;
 }
 
 /** A grown-up / friend in the family group — someone who can send and receive
