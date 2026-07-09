@@ -88,6 +88,7 @@ function App() {
           user={user}
           onCreate={(code) => createFamily(code, user?.uid ?? null)}
           onJoin={joinFamily}
+          showToast={showToast}
         />
       );
     if (connecting || !data)
