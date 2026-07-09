@@ -26,6 +26,7 @@ export function Settings({
 }) {
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(AVATARS[0]);
+  const [newKidPin, setNewKidPin] = useState("");
   const [pinInput, setPinInput] = useState("");
 
   const [memberName, setMemberName] = useState("");
@@ -33,11 +34,16 @@ export function Settings({
 
   const addKid = () => {
     if (!name.trim()) return;
+    if (sync.mode === "synced" && !/^\d{4}$/.test(newKidPin)) {
+      showToast("Give this kid a 4-digit PIN so only they can sign in as themselves");
+      return;
+    }
     update((d) => {
-      d.kids.push({ id: uid(), name: name.trim(), avatar });
+      d.kids.push({ id: uid(), name: name.trim(), avatar, pin: newKidPin || null });
       return d;
     });
     setName("");
+    setNewKidPin("");
     showToast("Kid added");
   };
 
@@ -89,6 +95,28 @@ export function Settings({
     showToast(pinInput ? "Parent PIN set 🔒" : "PIN removed");
   };
 
+  const makeAdmin = (newUid: string, name: string) => {
+    if (!window.confirm(`Make ${name} the family admin? You'll no longer be able to manage kids or members yourself unless they make you admin again.`)) {
+      return;
+    }
+    update((d) => {
+      d.adminUid = newUid;
+      return d;
+    });
+    showToast(`${name} is now the family admin 👑`);
+  };
+
+  // Only grown-ups who've actually signed in and linked themselves to a
+  // member can be handed admin — never someone who's just listed as a
+  // member but hasn't proven who they are.
+  const otherLinkedGrownups = Object.entries(data.memberAuth)
+    .filter(([signInUid]) => signInUid !== data.adminUid)
+    .map(([signInUid, memberId]) => ({
+      signInUid,
+      member: data.members.find((m) => m.id === memberId),
+    }))
+    .filter((x): x is { signInUid: string; member: NonNullable<typeof x.member> } => !!x.member);
+
   const [copied, setCopied] = useState(false);
   const copyCode = async () => {
     if (!sync.familyCode) return;
@@ -107,6 +135,35 @@ export function Settings({
         <div className={"fr-admin-badge" + (isAdmin ? "" : " not-admin")}>
           {isAdmin ? "👑 You're the family admin" : `👑 ${adminName} is the family admin`}
         </div>
+      )}
+
+      {sync.mode === "synced" && isAdmin && (
+        <>
+          <h3 className="fr-h3" style={{ marginTop: 0 }}>
+            Make someone else admin
+          </h3>
+          {otherLinkedGrownups.length === 0 ? (
+            <p className="fr-muted">
+              No one else has signed in and identified themselves yet. Once they
+              do (👤 button → Continue with Google), you can make them admin here.
+            </p>
+          ) : (
+            <>
+              <p className="fr-muted">
+                Only grown-ups who&apos;ve signed in can become admin.
+              </p>
+              {otherLinkedGrownups.map(({ signInUid, member }) => (
+                <div key={signInUid} className="fr-owed-row">
+                  <span className="fr-kid-emoji">{member.avatar}</span>
+                  <span className="fr-owed-name">{member.name}</span>
+                  <button className="fr-mini-btn" onClick={() => makeAdmin(signInUid, member.name)}>
+                    Make admin
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+        </>
       )}
 
       {sync.mode === "synced" && sync.familyCode && (
@@ -151,10 +208,15 @@ export function Settings({
       {data.kids.map((k) => (
         <div key={k.id} className="fr-owed-row">
           <span className="fr-kid-emoji">{k.avatar}</span>
-          <span className="fr-owed-name">{k.name}</span>
+          <span className="fr-owed-name">
+            {k.name}
+            {sync.mode === "synced" && !k.pin && (
+              <span className="fr-no-pin-warning"> ⚠️ no PIN set</span>
+            )}
+          </span>
           {sync.mode === "synced" && isAdmin && (
             <input
-              className="fr-input fr-kid-pin"
+              className={"fr-input fr-kid-pin" + (k.pin ? "" : " warn")}
               placeholder="PIN"
               value={k.pin ?? ""}
               inputMode="numeric"
@@ -186,6 +248,16 @@ export function Settings({
               maxLength={20}
               onChange={(e) => setName(e.target.value)}
             />
+            {sync.mode === "synced" && (
+              <input
+                className="fr-input fr-kid-pin"
+                placeholder="PIN"
+                value={newKidPin}
+                inputMode="numeric"
+                maxLength={4}
+                onChange={(e) => setNewKidPin(e.target.value.replace(/\D/g, ""))}
+              />
+            )}
             <button className="fr-mini-btn" onClick={addKid}>
               Add
             </button>

@@ -30,7 +30,8 @@ export function WhoScreen({
       setPinKid(kid);
       setEntry("");
     } else {
-      onPickKid(kid.id);
+      // No PIN set = no way to prove it's really them, so no entry.
+      showToast(`${kid.name} doesn't have a PIN yet. Ask an admin to set one in Settings.`);
     }
   };
 
@@ -108,11 +109,21 @@ export function WhoScreen({
             <label className="fr-field-label">Kids</label>
             <div className="fr-cats">
               {data.kids.map((k) => (
-                <button key={k.id} className="fr-cat" onClick={() => pickKid(k)}>
-                  <span>{k.avatar}</span> {k.name} {k.pin ? "🔒" : ""}
+                <button
+                  key={k.id}
+                  className={"fr-cat" + (k.pin ? "" : " no-pin")}
+                  onClick={() => pickKid(k)}
+                >
+                  <span>{k.avatar}</span> {k.name} {k.pin ? "🔒" : "⚠️"}
                 </button>
               ))}
             </div>
+            {data.kids.some((k) => !k.pin) && (
+              <p className="fr-muted" style={{ fontSize: 12, marginTop: 4, marginBottom: 0 }}>
+                ⚠️ Kids without a PIN can&apos;t sign in yet — an admin needs to set
+                one in Settings first.
+              </p>
+            )}
           </>
         )}
       </div>
