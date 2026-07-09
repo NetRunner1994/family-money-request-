@@ -1,4 +1,4 @@
-import { emptyData, type AppData } from "../types";
+import { emptyData, normalizeData, type AppData } from "../types";
 
 const STORAGE_KEY = "family-requests-v1";
 const CODE_KEY = "family-code";
@@ -6,7 +6,7 @@ const CODE_KEY = "family-code";
 export function loadData(): AppData {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as AppData) : { ...emptyData };
+    return raw ? normalizeData(JSON.parse(raw)) : { ...emptyData };
   } catch {
     return { ...emptyData };
   }

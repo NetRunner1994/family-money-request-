@@ -24,6 +24,9 @@ export function Settings({
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [pinInput, setPinInput] = useState("");
 
+  const [memberName, setMemberName] = useState("");
+  const [memberAvatar, setMemberAvatar] = useState(AVATARS[3]);
+
   const addKid = () => {
     if (!name.trim()) return;
     update((d) => {
@@ -38,6 +41,25 @@ export function Settings({
     update((d) => {
       d.kids = d.kids.filter((k) => k.id !== id);
       d.requests = d.requests.filter((r) => r.kidId !== id);
+      return d;
+    });
+  };
+
+  const addMember = () => {
+    if (!memberName.trim()) return;
+    update((d) => {
+      d.members.push({ id: uid(), name: memberName.trim(), avatar: memberAvatar });
+      return d;
+    });
+    setMemberName("");
+    showToast("Added to the group");
+  };
+
+  const removeMember = (id: string) => {
+    update((d) => {
+      d.members = d.members.filter((m) => m.id !== id);
+      // Drop peer requests involving this person.
+      d.peerRequests = d.peerRequests.filter((p) => p.fromId !== id && p.toId !== id);
       return d;
     });
   };
@@ -97,7 +119,7 @@ export function Settings({
       )}
 
       <h3 className="fr-h3" style={sync.mode === "synced" ? undefined : { marginTop: 0 }}>
-        Family members
+        Kids
       </h3>
       {data.kids.map((k) => (
         <div key={k.id} className="fr-owed-row">
@@ -124,6 +146,43 @@ export function Settings({
           onChange={(e) => setName(e.target.value)}
         />
         <button className="fr-mini-btn" onClick={addKid}>
+          Add
+        </button>
+      </div>
+
+      <h3 className="fr-h3">Grown-ups &amp; friends</h3>
+      <p className="fr-muted">
+        People who can request money from each other in the “Grown-ups” tab.
+      </p>
+      {data.members.map((m) => (
+        <div key={m.id} className="fr-owed-row">
+          <span className="fr-kid-emoji">{m.avatar}</span>
+          <span className="fr-owed-name">{m.name}</span>
+          <button className="fr-mini-btn danger" onClick={() => removeMember(m.id)}>
+            Remove
+          </button>
+        </div>
+      ))}
+      <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
+        {AVATARS.map((a) => (
+          <button
+            key={a}
+            className={"fr-avatar-opt" + (memberAvatar === a ? " picked" : "")}
+            onClick={() => setMemberAvatar(a)}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+      <div className="fr-add-row">
+        <input
+          className="fr-input"
+          placeholder="Grown-up or friend's name"
+          value={memberName}
+          maxLength={20}
+          onChange={(e) => setMemberName(e.target.value)}
+        />
+        <button className="fr-mini-btn" onClick={addMember}>
           Add
         </button>
       </div>
