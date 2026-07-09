@@ -13,7 +13,7 @@ import {
   saveData,
   saveFamilyCode,
 } from "../lib/storage";
-import { emptyData, type AppData } from "../types";
+import { emptyData, normalizeData, type AppData } from "../types";
 
 export type SyncMode = "local" | "synced";
 
@@ -86,7 +86,7 @@ export function useAppData(): UseAppData {
         ref,
         (snap) => {
           if (snap.exists()) {
-            setData(snap.data() as AppData);
+            setData(normalizeData(snap.data() as Partial<AppData>));
           } else {
             // Family doc doesn't exist yet — create an empty one.
             void setDoc(ref, { ...emptyData });
@@ -117,7 +117,7 @@ export function useAppData(): UseAppData {
         runTransaction(getDb()!, async (tx) => {
           const snap = await tx.get(ref);
           const current = snap.exists()
-            ? (snap.data() as AppData)
+            ? normalizeData(snap.data() as Partial<AppData>)
             : { ...emptyData };
           const next = fn(structuredClone(current));
           tx.set(ref, next);

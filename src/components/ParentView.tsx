@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { CATEGORIES, fmt, haptic, timeAgo } from "../lib/format";
 import type { AppData, Kid, MoneyRequest, RequestStatus } from "../types";
+import { FriendsView } from "./FriendsView";
 import { RequestCard } from "./RequestCard";
 import { Settings, type SyncInfo } from "./Settings";
 
-type Tab = "inbox" | "history" | "settings";
+type Tab = "inbox" | "friends" | "history" | "settings";
 
 export function ParentView({
   data,
@@ -20,6 +21,8 @@ export function ParentView({
   const [tab, setTab] = useState<Tab>("inbox");
   const pending = data.requests.filter((r) => r.status === "pending").sort((a, b) => a.createdAt - b.createdAt);
   const history = data.requests.filter((r) => r.status !== "pending").sort((a, b) => b.createdAt - a.createdAt);
+
+  const peerPending = data.peerRequests.filter((p) => p.status === "pending").length;
 
   const kidById = (id: string) => data.kids.find((k) => k.id === id);
 
@@ -41,7 +44,10 @@ export function ParentView({
     <main className="fr-main">
       <div className="fr-tabs">
         <button className={"fr-tab" + (tab === "inbox" ? " on" : "")} onClick={() => setTab("inbox")}>
-          Inbox {pending.length > 0 && <span className="fr-badge">{pending.length}</span>}
+          Kids {pending.length > 0 && <span className="fr-badge">{pending.length}</span>}
+        </button>
+        <button className={"fr-tab" + (tab === "friends" ? " on" : "")} onClick={() => setTab("friends")}>
+          Grown-ups {peerPending > 0 && <span className="fr-badge">{peerPending}</span>}
         </button>
         <button className={"fr-tab" + (tab === "history" ? " on" : "")} onClick={() => setTab("history")}>
           History
@@ -64,6 +70,8 @@ export function ParentView({
           )}
         </>
       )}
+
+      {tab === "friends" && <FriendsView data={data} update={update} showToast={showToast} />}
 
       {tab === "history" && (
         <section className="fr-section">

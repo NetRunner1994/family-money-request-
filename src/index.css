@@ -264,6 +264,12 @@ body {
 }
 @keyframes fr-pop { from { opacity: 0; transform: translate(-50%, 8px); } }
 
+/* peer request form */
+.fr-field-label {
+  display: block; font-weight: 800; font-size: 13px; color: var(--muted);
+  margin: 12px 0 6px;
+}
+
 /* family gate / sync */
 .fr-gate-emoji { font-size: 48px; text-align: center; margin-bottom: 6px; }
 .fr-code-box {
