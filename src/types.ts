@@ -48,6 +48,9 @@ export interface AppData {
   members: Member[];
   peerRequests: PeerRequest[];
   pin: string | null;
+  /** Maps a signed-in grown-up's account id (Firebase uid) to their member id,
+   *  so the app knows who they are automatically after signing in. */
+  memberAuth: Record<string, string>;
 }
 
 export const emptyData: AppData = {
@@ -56,10 +59,11 @@ export const emptyData: AppData = {
   members: [],
   peerRequests: [],
   pin: null,
+  memberAuth: {},
 };
 
 /** Fill in any missing fields so data saved by older versions (which had no
- *  members / peerRequests) always loads as a complete AppData. */
+ *  members / peerRequests / memberAuth) always loads as a complete AppData. */
 export function normalizeData(d: Partial<AppData> | null | undefined): AppData {
   return {
     kids: d?.kids ?? [],
@@ -67,5 +71,6 @@ export function normalizeData(d: Partial<AppData> | null | undefined): AppData {
     members: d?.members ?? [],
     peerRequests: d?.peerRequests ?? [],
     pin: d?.pin ?? null,
+    memberAuth: d?.memberAuth ?? {},
   };
 }

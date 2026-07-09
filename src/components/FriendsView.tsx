@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { fmt, haptic, timeAgo, uid } from "../lib/format";
+import type { User } from "../lib/auth";
 import type { AppData, Member, PeerRequest } from "../types";
 
 const QUICK = [5, 10, 20, 50];
@@ -8,13 +9,19 @@ export function FriendsView({
   data,
   update,
   showToast,
+  user,
 }: {
   data: AppData;
   update: (fn: (d: AppData) => AppData) => void;
   showToast: (msg: string) => void;
+  user: User | null;
 }) {
   const members = data.members;
-  const [fromId, setFromId] = useState<string | null>(null);
+  // If the signed-in grown-up is linked to a member, that's who's asking.
+  const myMemberId = user ? data.memberAuth[user.uid] ?? null : null;
+  const [fromIdManual, setFromIdManual] = useState<string | null>(null);
+  const fromId = myMemberId ?? fromIdManual;
+  const setFromId = setFromIdManual;
   const [toId, setToId] = useState<string | null>(null);
   const [amountStr, setAmountStr] = useState("");
   const [note, setNote] = useState("");
@@ -80,19 +87,25 @@ export function FriendsView({
         <p className="fr-muted">Ask someone in the group to pay you back.</p>
 
         <label className="fr-field-label">Who&apos;s asking?</label>
-        <div className="fr-cats">
-          {members.map((m) => (
-            <MemberChip
-              key={m.id}
-              m={m}
-              on={fromId === m.id}
-              onClick={() => {
-                setFromId(m.id);
-                if (toId === m.id) setToId(null);
-              }}
-            />
-          ))}
-        </div>
+        {myMemberId ? (
+          <p className="fr-muted" style={{ marginBottom: 4 }}>
+            {memberById(myMemberId)?.avatar} You ({memberById(myMemberId)?.name})
+          </p>
+        ) : (
+          <div className="fr-cats">
+            {members.map((m) => (
+              <MemberChip
+                key={m.id}
+                m={m}
+                on={fromId === m.id}
+                onClick={() => {
+                  setFromId(m.id);
+                  if (toId === m.id) setToId(null);
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <label className="fr-field-label">Request from</label>
         <div className="fr-cats">

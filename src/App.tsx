@@ -6,6 +6,7 @@ import { Onboarding } from "./components/Onboarding";
 import { ParentView } from "./components/ParentView";
 import { PinGate } from "./components/PinGate";
 import { useAppData } from "./hooks/useAppData";
+import { useAuth } from "./hooks/useAuth";
 
 type Mode = "kid" | "parent";
 
@@ -21,6 +22,7 @@ function App() {
     joinFamily,
     leaveFamily,
   } = useAppData();
+  const { user } = useAuth();
 
   const [mode, setMode] = useState<Mode>("kid");
   const [pinGate, setPinGate] = useState(false);
@@ -92,6 +94,7 @@ function App() {
               update={update}
               showToast={showToast}
               sync={{ mode: syncMode, familyCode, leaveFamily }}
+              user={user}
             />
           )}
         </>
