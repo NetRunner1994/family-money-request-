@@ -24,6 +24,8 @@ function App() {
     familyCode,
     syncAvailable,
     connecting,
+    connectError,
+    retryConnect,
     createFamily,
     joinFamily,
     leaveFamily,
@@ -90,6 +92,22 @@ function App() {
           onJoin={joinFamily}
           showToast={showToast}
         />
+      );
+    if (connectError)
+      return (
+        <main className="fr-main">
+          <div className="fr-card fr-pad fr-empty">
+            <div className="fr-done-emoji">⚠️</div>
+            <h2 className="fr-h2">Couldn&apos;t connect</h2>
+            <p className="fr-muted">{connectError}</p>
+            <button className="fr-primary-btn" onClick={retryConnect}>
+              Try again
+            </button>
+            <button className="fr-ghost-btn" onClick={leaveFamily}>
+              Use a different code
+            </button>
+          </div>
+        </main>
       );
     if (connecting || !data)
       return (
