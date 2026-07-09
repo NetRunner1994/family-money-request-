@@ -13,12 +13,12 @@
 // -----------------------------------------------------------------------------
 
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyA5rSUyOmzUWXu1JArNnpbsbS0-s-4AqzI",
+  authDomain: "family-tab-cc7c1.firebaseapp.com",
+  projectId: "family-tab-cc7c1",
+  storageBucket: "family-tab-cc7c1.firebasestorage.app",
+  messagingSenderId: "340578756992",
+  appId: "1:340578756992:web:c0f9bd2ac470cad081f965",
 };
 
 // The app treats sync as "available" only once a real apiKey + projectId exist.
