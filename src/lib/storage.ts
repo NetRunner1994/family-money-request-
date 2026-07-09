@@ -28,6 +28,25 @@ export function loadFamilyCode(): string | null {
   }
 }
 
+const KID_KEY = "kid-identity";
+
+export function loadKidIdentity(): string | null {
+  try {
+    return window.localStorage.getItem(KID_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function saveKidIdentity(kidId: string | null) {
+  try {
+    if (kidId) window.localStorage.setItem(KID_KEY, kidId);
+    else window.localStorage.removeItem(KID_KEY);
+  } catch (e) {
+    console.error("save kid identity failed", e);
+  }
+}
+
 export function saveFamilyCode(code: string | null) {
   try {
     if (code) window.localStorage.setItem(CODE_KEY, code);

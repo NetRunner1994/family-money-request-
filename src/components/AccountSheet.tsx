@@ -6,12 +6,18 @@ export function AccountSheet({
   data,
   update,
   user,
+  kidName,
+  canSwitch,
+  onSwitchUser,
   showToast,
   onClose,
 }: {
   data: AppData | null;
   update: (fn: (d: AppData) => AppData) => void;
   user: User | null;
+  kidName?: string | null;
+  canSwitch?: boolean;
+  onSwitchUser?: () => void;
   showToast: (msg: string) => void;
   onClose: () => void;
 }) {
@@ -59,7 +65,18 @@ export function AccountSheet({
           Your account
         </h3>
 
-        {!user ? (
+        {kidName ? (
+          <>
+            <p className="fr-muted">
+              You&apos;re using this phone as <strong>{kidName}</strong>.
+            </p>
+            {onSwitchUser && canSwitch && (
+              <button className="fr-mini-btn danger" onClick={onSwitchUser}>
+                Switch user
+              </button>
+            )}
+          </>
+        ) : !user ? (
           <>
             <p className="fr-muted">
               Sign in so the app knows it&apos;s you — no more picking your name,
