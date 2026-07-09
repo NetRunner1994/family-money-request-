@@ -82,7 +82,14 @@ function App() {
     firebaseEnabled && !needsFamily && !connecting && !!data && !grownup && !kidIdentity;
 
   const renderMain = () => {
-    if (needsFamily) return <FamilyGate onCreate={createFamily} onJoin={joinFamily} />;
+    if (needsFamily)
+      return (
+        <FamilyGate
+          user={user}
+          onCreate={(code) => createFamily(code, user?.uid ?? null)}
+          onJoin={joinFamily}
+        />
+      );
     if (connecting || !data)
       return (
         <main className="fr-main">

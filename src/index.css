@@ -273,6 +273,12 @@ body {
 }
 @keyframes fr-pop { from { opacity: 0; transform: translate(-50%, 8px); } }
 
+.fr-admin-badge {
+  background: var(--sun); color: var(--ink); font-weight: 800; font-size: 13px;
+  border-radius: 999px; padding: 8px 14px; display: inline-block; margin-bottom: 14px;
+}
+.fr-admin-badge.not-admin { background: #F4F8F4; color: var(--muted); }
+
 /* peer request form */
 .fr-field-label {
   display: block; font-weight: 800; font-size: 13px; color: var(--muted);

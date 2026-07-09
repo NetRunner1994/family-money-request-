@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CATEGORIES, fmt, haptic, timeAgo } from "../lib/format";
 import type { AppData, Kid, MoneyRequest, RequestStatus } from "../types";
 import type { User } from "../lib/auth";
@@ -28,6 +28,22 @@ export function ParentView({
   const peerPending = data.peerRequests.filter((p) => p.status === "pending").length;
 
   const kidById = (id: string) => data.kids.find((k) => k.id === id);
+
+  // A family created before this feature has no admin yet — whichever
+  // grown-up opens Settings first quietly becomes it, so nobody gets locked
+  // out of a family they already run.
+  useEffect(() => {
+    if (sync.mode === "synced" && !data.adminUid && user) {
+      update((d) => {
+        if (!d.adminUid) d.adminUid = user.uid;
+        return d;
+      });
+    }
+  }, [sync.mode, data.adminUid, user, update]);
+
+  const isAdmin = sync.mode !== "synced" || !data.adminUid || data.adminUid === user?.uid;
+  const adminMember = data.members.find((m) => m.id === data.memberAuth[data.adminUid ?? ""]);
+  const adminName = adminMember?.name ?? "the family admin";
 
   const decide = (id: string, status: RequestStatus, note: string) => {
     update((d) => {
@@ -91,7 +107,14 @@ export function ParentView({
       )}
 
       {tab === "settings" && (
-        <Settings data={data} update={update} showToast={showToast} sync={sync} />
+        <Settings
+          data={data}
+          update={update}
+          showToast={showToast}
+          sync={sync}
+          isAdmin={isAdmin}
+          adminName={adminName}
+        />
       )}
     </main>
   );

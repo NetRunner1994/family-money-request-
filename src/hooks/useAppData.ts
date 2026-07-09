@@ -28,7 +28,7 @@ export interface UseAppData {
   syncAvailable: boolean;
   /** Waiting on the first cloud snapshot. */
   connecting: boolean;
-  createFamily: (code: string) => Promise<void>;
+  createFamily: (code: string, adminUid: string | null) => Promise<void>;
   joinFamily: (code: string) => void;
   leaveFamily: () => void;
 }
@@ -146,13 +146,15 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     }
   }, [synced, data, update]);
 
-  const createFamily = useCallback(async (code: string) => {
+  const createFamily = useCallback(async (code: string, adminUid: string | null) => {
     const ref = familyDoc(code);
     if (!ref) return;
     try {
       await ensureSignedIn();
-      // Seed the new family with whatever this device already had locally.
-      await setDoc(ref, structuredClone(seedRef.current));
+      // Seed the new family with whatever this device already had locally,
+      // and mark whoever created it as the admin.
+      const seed = { ...structuredClone(seedRef.current), adminUid };
+      await setDoc(ref, seed);
     } catch (e) {
       console.error("create family failed", e);
     }

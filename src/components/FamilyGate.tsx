@@ -4,11 +4,14 @@ import {
   isValidFamilyCode,
   normalizeFamilyCode,
 } from "../lib/familyCode";
+import { signInWithGoogle, type User } from "../lib/auth";
 
 export function FamilyGate({
+  user,
   onCreate,
   onJoin,
 }: {
+  user: User | null;
   onCreate: (code: string) => void;
   onJoin: (code: string) => void;
 }) {
@@ -49,7 +52,23 @@ export function FamilyGate({
           </>
         )}
 
-        {view === "create" && (
+        {view === "create" && !user && (
+          <>
+            <button className="fr-back" onClick={() => setView("choose")}>
+              ← back
+            </button>
+            <h2 className="fr-h2">Sign in to start your family</h2>
+            <p className="fr-muted">
+              Whoever creates the family becomes its admin — the only one who can
+              add or remove kids and grown-ups later. Sign in so that&apos;s really you.
+            </p>
+            <button className="fr-primary-btn" onClick={() => signInWithGoogle()}>
+              Continue with Google
+            </button>
+          </>
+        )}
+
+        {view === "create" && user && (
           <>
             <button className="fr-back" onClick={() => setView("choose")}>
               ← back
@@ -58,7 +77,7 @@ export function FamilyGate({
             <p className="fr-muted">
               Share this with the family. Each person taps “Join with a code” on
               their own phone and enters it. Keep it private — anyone with the code
-              can see your family’s requests.
+              can see your family’s requests. You&apos;ll be the family admin.
             </p>
             <div className="fr-code-box">{newCode}</div>
             <button className="fr-quick-btn fr-copy-btn" onClick={copy}>
