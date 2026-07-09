@@ -6,6 +6,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { ensureSignedIn, firebaseEnabled, getDb } from "../lib/firebase";
+import { pruneOldRequests } from "../lib/retention";
 import {
   loadData,
   loadFamilyCode,
@@ -43,14 +44,24 @@ export function useAppData(): UseAppData {
   // In local mode we have data immediately; in synced mode we wait for the
   // first snapshot before rendering the app.
   const synced = firebaseEnabled && !!familyCode;
-  const [data, setData] = useState<AppData | null>(() =>
-    synced ? null : loadData()
-  );
+  const [data, setData] = useState<AppData | null>(() => {
+    if (synced) return null;
+    // Local mode: clear old settled history on load.
+    const { data: pruned, changed } = pruneOldRequests(loadData());
+    if (changed) saveData(pruned);
+    return pruned;
+  });
   const [connecting, setConnecting] = useState(synced);
 
   // Hold the latest seed data (local device data) so "create family" can carry
   // existing kids/requests into the new shared family instead of losing them.
   const seedRef = useRef<AppData>(loadData());
+  // Ensures the once-per-family cleanup of old settled requests runs a single
+  // time after connecting, not on every incoming snapshot.
+  const prunedRef = useRef(false);
+  useEffect(() => {
+    prunedRef.current = false;
+  }, [familyCode]);
   useEffect(() => {
     if (!synced && data) seedRef.current = data;
   }, [synced, data]);
@@ -122,6 +133,16 @@ export function useAppData(): UseAppData {
     },
     [familyCode]
   );
+
+  // Synced mode: once we have data for a family, clear old settled history a
+  // single time. The write goes through the same transaction path as any edit.
+  useEffect(() => {
+    if (!synced || !data || prunedRef.current) return;
+    prunedRef.current = true;
+    if (pruneOldRequests(data).changed) {
+      update((d) => pruneOldRequests(d).data);
+    }
+  }, [synced, data, update]);
 
   const createFamily = useCallback(async (code: string) => {
     const ref = familyDoc(code);

@@ -147,6 +147,11 @@ export function Settings({
           Save
         </button>
       </div>
+
+      <p className="fr-muted" style={{ marginTop: 20, marginBottom: 0, fontSize: 12 }}>
+        To save space, paid and declined requests are cleared automatically after
+        3 months. Pending requests and unpaid balances are always kept.
+      </p>
     </div>
   );
 }
