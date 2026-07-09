@@ -22,6 +22,11 @@ export function getDb(): Firestore | null {
   return dbInstance;
 }
 
+export function getAuthObj(): Auth | null {
+  ensureApp();
+  return authInstance;
+}
+
 let signInPromise: Promise<void> | null = null;
 
 /** Sign in anonymously once; safe to call repeatedly. */
