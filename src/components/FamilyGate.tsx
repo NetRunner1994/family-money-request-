@@ -4,16 +4,19 @@ import {
   isValidFamilyCode,
   normalizeFamilyCode,
 } from "../lib/familyCode";
-import { signInWithGoogle, type User } from "../lib/auth";
+import type { User } from "../lib/auth";
+import { EmailAuthForm } from "./EmailAuthForm";
 
 export function FamilyGate({
   user,
   onCreate,
   onJoin,
+  showToast,
 }: {
   user: User | null;
   onCreate: (code: string) => void;
   onJoin: (code: string) => void;
+  showToast: (msg: string) => void;
 }) {
   const [view, setView] = useState<"choose" | "create" | "join">("choose");
   const [newCode] = useState(() => generateFamilyCode());
@@ -62,9 +65,7 @@ export function FamilyGate({
               Whoever creates the family becomes its admin — the only one who can
               add or remove kids and grown-ups later. Sign in so that&apos;s really you.
             </p>
-            <button className="fr-primary-btn" onClick={() => signInWithGoogle()}>
-              Continue with Google
-            </button>
+            <EmailAuthForm showToast={showToast} />
           </>
         )}
 

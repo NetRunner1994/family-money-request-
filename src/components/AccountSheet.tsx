@@ -1,6 +1,7 @@
 import { AVATARS, uid } from "../lib/format";
-import { signInWithApple, signInWithGoogle, signOutUser, type User } from "../lib/auth";
+import { signOutUser, type User } from "../lib/auth";
 import type { AppData } from "../types";
+import { EmailAuthForm } from "./EmailAuthForm";
 
 export function AccountSheet({
   data,
@@ -24,15 +25,6 @@ export function AccountSheet({
   const members = data?.members ?? [];
   const linkedMemberId = user && data ? data.memberAuth[user.uid] : undefined;
   const linkedMember = members.find((m) => m.id === linkedMemberId);
-
-  const doSignIn = async (provider: "google" | "apple") => {
-    try {
-      await (provider === "google" ? signInWithGoogle() : signInWithApple());
-    } catch (e) {
-      console.error(e);
-      showToast("Sign-in didn't work. Try again.");
-    }
-  };
 
   const linkMe = (memberId: string) => {
     if (!user) return;
@@ -82,12 +74,7 @@ export function AccountSheet({
               Sign in so the app knows it&apos;s you — no more picking your name,
               and no one else can send requests as you.
             </p>
-            <button className="fr-primary-btn" onClick={() => doSignIn("google")}>
-              Continue with Google
-            </button>
-            <button className="fr-ghost-btn" onClick={() => doSignIn("apple")}>
-              Continue with Apple
-            </button>
+            <EmailAuthForm showToast={showToast} />
           </>
         ) : (
           <>

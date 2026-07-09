@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { signInWithApple, signInWithGoogle } from "../lib/auth";
 import { haptic } from "../lib/format";
 import type { AppData, Kid } from "../types";
+import { EmailAuthForm } from "./EmailAuthForm";
 
 export function WhoScreen({
   data,
@@ -15,15 +15,6 @@ export function WhoScreen({
   const [pinKid, setPinKid] = useState<Kid | null>(null);
   const [entry, setEntry] = useState("");
   const [shake, setShake] = useState(false);
-
-  const doSignIn = async (provider: "google" | "apple") => {
-    try {
-      await (provider === "google" ? signInWithGoogle() : signInWithApple());
-    } catch (e) {
-      console.error(e);
-      showToast("Sign-in didn't work. Try again.");
-    }
-  };
 
   const pickKid = (kid: Kid) => {
     if (kid.pin) {
@@ -97,12 +88,7 @@ export function WhoScreen({
         <p className="fr-muted">Pick yourself so the app only lets you act as you.</p>
 
         <label className="fr-field-label">Grown-up</label>
-        <button className="fr-primary-btn" onClick={() => doSignIn("google")}>
-          I&apos;m a grown-up — sign in with Google
-        </button>
-        <button className="fr-ghost-btn" onClick={() => doSignIn("apple")}>
-          Sign in with Apple
-        </button>
+        <EmailAuthForm showToast={showToast} />
 
         {data.kids.length > 0 && (
           <>
