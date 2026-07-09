@@ -5,8 +5,10 @@ import { KidView } from "./components/KidView";
 import { Onboarding } from "./components/Onboarding";
 import { ParentView } from "./components/ParentView";
 import { PinGate } from "./components/PinGate";
+import { AccountSheet } from "./components/AccountSheet";
 import { useAppData } from "./hooks/useAppData";
 import { useAuth } from "./hooks/useAuth";
+import { firebaseEnabled } from "./lib/firebase";
 
 type Mode = "kid" | "parent";
 
@@ -26,6 +28,7 @@ function App() {
 
   const [mode, setMode] = useState<Mode>("kid");
   const [pinGate, setPinGate] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -45,6 +48,9 @@ function App() {
   // Sync is on, but this device hasn't joined a family yet → show the gate.
   const needsFamily = syncAvailable && !familyCode;
 
+  const myMember =
+    user && data ? data.members.find((m) => m.id === data.memberAuth[user.uid]) : undefined;
+
   return (
     <div className="fr-app">
       <header className="fr-header">
@@ -55,16 +61,28 @@ function App() {
             <div className="fr-logo-sub">ask, explain, get a yes (maybe)</div>
           </div>
         </div>
-        {!needsFamily && (
-          <div className="fr-mode">
-            <button className={"fr-mode-btn" + (mode === "kid" ? " on" : "")} onClick={() => setMode("kid")}>
-              Kids
+        <div className="fr-header-right">
+          {!needsFamily && (
+            <div className="fr-mode">
+              <button className={"fr-mode-btn" + (mode === "kid" ? " on" : "")} onClick={() => setMode("kid")}>
+                Kids
+              </button>
+              <button className={"fr-mode-btn" + (mode === "parent" ? " on" : "")} onClick={tryParentMode}>
+                Parents
+              </button>
+            </div>
+          )}
+          {firebaseEnabled && (
+            <button
+              className="fr-account-btn"
+              onClick={() => setAccountOpen(true)}
+              aria-label="Your account"
+              title="Your account"
+            >
+              {myMember ? myMember.avatar : user ? "✅" : "👤"}
             </button>
-            <button className={"fr-mode-btn" + (mode === "parent" ? " on" : "")} onClick={tryParentMode}>
-              Parents
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </header>
 
       {needsFamily ? (
@@ -108,6 +126,16 @@ function App() {
             setMode("parent");
           }}
           onCancel={() => setPinGate(false)}
+        />
+      )}
+
+      {accountOpen && (
+        <AccountSheet
+          data={data}
+          update={update}
+          user={user}
+          showToast={showToast}
+          onClose={() => setAccountOpen(false)}
         />
       )}
 

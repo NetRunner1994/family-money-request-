@@ -91,7 +91,7 @@ export function ParentView({
       )}
 
       {tab === "settings" && (
-        <Settings data={data} update={update} showToast={showToast} sync={sync} user={user} />
+        <Settings data={data} update={update} showToast={showToast} sync={sync} />
       )}
     </main>
   );

@@ -67,7 +67,15 @@ body {
 .fr-logo-coin { font-size: 34px; }
 .fr-logo-name { font-family: 'Baloo 2', cursive; font-weight: 800; font-size: 24px; line-height: 1; }
 .fr-logo-sub { font-size: 12px; color: var(--muted); font-weight: 600; }
+.fr-header-right { display: flex; align-items: center; gap: 8px; }
 .fr-mode { display: flex; background: #DFEADF; border-radius: 999px; padding: 4px; }
+.fr-account-btn {
+  width: 42px; height: 42px; border-radius: 999px; background: #DFEADF;
+  font-size: 20px; line-height: 1; display: grid; place-items: center;
+  box-shadow: 0 2px 0 rgba(23,48,31,.08); flex: none;
+}
+.fr-account-btn:active { transform: scale(.94); }
+.fr-account { width: 100%; max-width: 340px; margin: 0; }
 .fr-mode-btn {
   padding: 8px 18px; border-radius: 999px; background: transparent;
   font-weight: 800; font-size: 14px; color: var(--muted); transition: all .15s;
