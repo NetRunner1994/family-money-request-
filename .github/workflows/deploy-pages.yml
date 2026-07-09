@@ -5,15 +5,19 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Grant the workflow the permissions it needs to enable Pages and publish.
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
+# Allow only one concurrent deployment.
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,8 +35,25 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      # enablement: true turns on GitHub Pages (build type "workflow") via the
+      # API using the in-runner token, so no manual Settings change is needed.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
