@@ -35,8 +35,34 @@ jobs:
       - name: Build
         run: npm run build
 
-      # enablement: true turns on GitHub Pages (build type "workflow") via the
-      # API using the in-runner token, so no manual Settings change is needed.
+      # Force the Pages source to "GitHub Actions" (build_type: workflow).
+      # The repo was previously set to "Deploy from a branch", which kept
+      # publishing the raw source tree (white page). This PUT/POST runs on
+      # GitHub's runner using the in-repo token, so no manual Settings change
+      # is needed. PUT updates an existing Pages site; POST creates one if it
+      # doesn't exist yet.
+      - name: Force Pages source to GitHub Actions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO/pages" \
+            -d '{"build_type":"workflow"}')
+          echo "PUT /pages -> $code"
+          if [ "$code" = "404" ]; then
+            curl -s -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "https://api.github.com/repos/$REPO/pages" \
+              -d '{"build_type":"workflow"}'
+          fi
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
