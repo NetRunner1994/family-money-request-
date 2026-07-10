@@ -6,6 +6,7 @@ import { Onboarding } from "./components/Onboarding";
 import { ParentView } from "./components/ParentView";
 import { PinGate } from "./components/PinGate";
 import { AccountSheet } from "./components/AccountSheet";
+import { LinkMemberScreen } from "./components/LinkMemberScreen";
 import { WhoScreen } from "./components/WhoScreen";
 import { useAppData } from "./hooks/useAppData";
 import { useAuth } from "./hooks/useAuth";
@@ -82,6 +83,11 @@ function App() {
   // In login mode, once you're in a family and loaded, you must be identified.
   const needsIdentity =
     firebaseEnabled && !needsFamily && !connecting && !!data && !grownup && !kidIdentity;
+  // Being signed in only proves who you are — it doesn't add you to the
+  // family's member list by itself. Force that step before letting a
+  // signed-in grown-up into the app, so nobody can end up invisible to
+  // everyone else (signed in, but no name anywhere the family can see).
+  const needsMemberLink = firebaseEnabled && !needsFamily && !connecting && !!data && grownup && !myMember;
 
   const renderMain = () => {
     if (needsFamily)
@@ -122,6 +128,8 @@ function App() {
     // ---- Login mode: identity decides the whole experience ----
     if (firebaseEnabled) {
       if (needsIdentity) return <WhoScreen data={data} onPickKid={pickKid} showToast={showToast} />;
+      if (needsMemberLink && user)
+        return <LinkMemberScreen data={data} update={update} user={user} showToast={showToast} />;
       if (kidIdentity)
         return (
           <>
