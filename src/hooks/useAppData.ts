@@ -8,7 +8,7 @@ import {
 import type { User } from "../lib/auth";
 import { ensureSignedIn, firebaseEnabled, getDb } from "../lib/firebase";
 import { pruneOldRequests } from "../lib/retention";
-import { getUserFamily, setUserFamily } from "../lib/userFamily";
+import { clearUserFamily, getUserFamily, setUserFamily } from "../lib/userFamily";
 import {
   loadData,
   loadFamilyCode,
@@ -210,22 +210,33 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
     setFamilyCode(code);
   }, []);
 
+  // Set right before an explicit leave so the auto-rejoin effect below
+  // doesn't immediately pull the just-left family back in.
+  const skipAutoRejoinRef = useRef(false);
+
   const leaveFamily = useCallback(() => {
+    skipAutoRejoinRef.current = true;
     setConnectError(null);
     saveFamilyCode(null);
     setFamilyCode(null);
     setConnecting(false);
     setData(loadData());
-  }, []);
+    // Forget it on the account too, or signing back in would restore it.
+    if (user) void clearUserFamily(user.uid);
+  }, [user]);
 
   // Tie the family to the signed-in account so it "follows" the person:
   //  - if they're in a family, remember it on their account;
   //  - if they're signed in but this device has no family, restore the one
-  //    their account remembers.
+  //    their account remembers (unless they just explicitly left one).
   useEffect(() => {
     if (!firebaseEnabled || !authReady || !user) return;
     if (familyCode) {
       void setUserFamily(user.uid, familyCode);
+      return;
+    }
+    if (skipAutoRejoinRef.current) {
+      skipAutoRejoinRef.current = false;
       return;
     }
     let cancelled = false;
