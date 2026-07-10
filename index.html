@@ -2,22 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script>
-      // This app is only meant to live at netrunner1994.github.io. GitHub Pages
-      // project sites automatically also resolve under any custom domain
-      // already linked to this account (e.g. a personal domain used for a
-      // different site) — if that's how this page got loaded, bounce straight
-      // to the real address before anything else runs, so there's only ever
-      // one storage/session for this app instead of two disconnected copies.
-      (function () {
-        var canonicalHost = "netrunner1994.github.io";
-        if (window.location.hostname !== canonicalHost && window.location.hostname !== "localhost") {
-          window.location.replace(
-            "https://" + canonicalHost + window.location.pathname + window.location.search + window.location.hash
-          );
-        }
-      })();
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="Kids ask for money, parents approve or decline — a family allowance & money-request tracker for your phone." />
 
