@@ -144,6 +144,17 @@ export function FriendsView({
         <button className="fr-primary-btn" style={{ marginTop: 14 }} disabled={!canSend} onClick={send}>
           Request {amount > 0 ? fmt(amount) : "money"}
         </button>
+        {!canSend && (
+          <p className="fr-muted" style={{ fontSize: 12, marginTop: 6, marginBottom: 0 }}>
+            {!fromId
+              ? "Pick who's asking above."
+              : !toId
+                ? "Pick who to request money from."
+                : fromId === toId
+                  ? "Pick a different person to request from — not yourself."
+                  : "Enter an amount above $0."}
+          </p>
+        )}
       </div>
 
       {requests.length === 0 ? (
