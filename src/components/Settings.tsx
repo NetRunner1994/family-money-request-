@@ -95,14 +95,18 @@ export function Settings({
     showToast(pinInput ? "Parent PIN set 🔒" : "PIN removed");
   };
 
+  // Native confirm()/alert() dialogs are unreliable inside installed PWAs on
+  // some mobile browsers (silently suppressed, so nothing visibly happens) —
+  // these use plain in-app confirm steps instead so the action can't
+  // silently no-op.
+  const [confirmingAdminUid, setConfirmingAdminUid] = useState<string | null>(null);
+
   const makeAdmin = (newUid: string, name: string) => {
-    if (!window.confirm(`Make ${name} the family admin? You'll no longer be able to manage kids or members yourself unless they make you admin again.`)) {
-      return;
-    }
     update((d) => {
       d.adminUid = newUid;
       return d;
     });
+    setConfirmingAdminUid(null);
     showToast(`${name} is now the family admin 👑`);
   };
 
@@ -116,6 +120,8 @@ export function Settings({
       member: data.members.find((m) => m.id === memberId),
     }))
     .filter((x): x is { signInUid: string; member: NonNullable<typeof x.member> } => !!x.member);
+
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const [copied, setCopied] = useState(false);
   const copyCode = async () => {
@@ -152,15 +158,31 @@ export function Settings({
               <p className="fr-muted">
                 Only grown-ups who&apos;ve signed in can become admin.
               </p>
-              {otherLinkedGrownups.map(({ signInUid, member }) => (
-                <div key={signInUid} className="fr-owed-row">
-                  <span className="fr-kid-emoji">{member.avatar}</span>
-                  <span className="fr-owed-name">{member.name}</span>
-                  <button className="fr-mini-btn" onClick={() => makeAdmin(signInUid, member.name)}>
-                    Make admin
-                  </button>
-                </div>
-              ))}
+              {otherLinkedGrownups.map(({ signInUid, member }) =>
+                confirmingAdminUid === signInUid ? (
+                  <div key={signInUid} className="fr-confirm-row">
+                    <span className="fr-muted" style={{ margin: 0 }}>
+                      Make {member.name} admin? You&apos;ll lose admin unless they hand it back.
+                    </span>
+                    <div className="fr-add-row">
+                      <button className="fr-mini-btn" onClick={() => setConfirmingAdminUid(null)}>
+                        Cancel
+                      </button>
+                      <button className="fr-mini-btn danger" onClick={() => makeAdmin(signInUid, member.name)}>
+                        Yes, make admin
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={signInUid} className="fr-owed-row">
+                    <span className="fr-kid-emoji">{member.avatar}</span>
+                    <span className="fr-owed-name">{member.name}</span>
+                    <button className="fr-mini-btn" onClick={() => setConfirmingAdminUid(signInUid)}>
+                      Make admin
+                    </button>
+                  </div>
+                )
+              )}
             </>
           )}
         </>
@@ -175,21 +197,30 @@ export function Settings({
             This family is synced across phones. Share the code so others can join.
           </p>
           <div className="fr-code-box small">{sync.familyCode}</div>
-          <div className="fr-add-row">
-            <button className="fr-mini-btn" onClick={copyCode}>
-              {copied ? "Copied ✓" : "Copy code"}
-            </button>
-            <button
-              className="fr-mini-btn danger"
-              onClick={() => {
-                if (window.confirm("Leave this family on this phone? You can rejoin with the code.")) {
-                  sync.leaveFamily();
-                }
-              }}
-            >
-              Leave family
-            </button>
-          </div>
+          {confirmingLeave ? (
+            <div className="fr-confirm-row">
+              <span className="fr-muted" style={{ margin: 0 }}>
+                Leave this family on this phone? You can rejoin with the code above.
+              </span>
+              <div className="fr-add-row">
+                <button className="fr-mini-btn" onClick={() => setConfirmingLeave(false)}>
+                  Cancel
+                </button>
+                <button className="fr-mini-btn danger" onClick={() => sync.leaveFamily()}>
+                  Yes, leave
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="fr-add-row">
+              <button className="fr-mini-btn" onClick={copyCode}>
+                {copied ? "Copied ✓" : "Copy code"}
+              </button>
+              <button className="fr-mini-btn danger" onClick={() => setConfirmingLeave(true)}>
+                Leave family
+              </button>
+            </div>
+          )}
         </>
       )}
 
