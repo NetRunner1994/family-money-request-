@@ -1,11 +1,9 @@
-import { AVATARS, uid } from "../lib/format";
 import { signOutUser, type User } from "../lib/auth";
 import type { AppData } from "../types";
 import { EmailAuthForm } from "./EmailAuthForm";
 
 export function AccountSheet({
   data,
-  update,
   user,
   kidName,
   canSwitch,
@@ -22,33 +20,8 @@ export function AccountSheet({
   showToast: (msg: string) => void;
   onClose: () => void;
 }) {
-  const members = data?.members ?? [];
   const linkedMemberId = user && data ? data.memberAuth[user.uid] : undefined;
-  const linkedMember = members.find((m) => m.id === linkedMemberId);
-
-  const linkMe = (memberId: string) => {
-    if (!user) return;
-    update((d) => {
-      d.memberAuth[user.uid] = memberId;
-      return d;
-    });
-    showToast("That's you now 👋");
-  };
-
-  const createMe = () => {
-    if (!user) return;
-    const newId = uid();
-    update((d) => {
-      d.members.push({
-        id: newId,
-        name: user.displayName || user.email?.split("@")[0] || "Me",
-        avatar: AVATARS[d.members.length % AVATARS.length],
-      });
-      d.memberAuth[user.uid] = newId;
-      return d;
-    });
-    showToast("Added you to the group 👋");
-  };
+  const linkedMember = data?.members.find((m) => m.id === linkedMemberId);
 
   return (
     <div className="fr-overlay" onClick={onClose}>
@@ -90,21 +63,9 @@ export function AccountSheet({
                 <span className="fr-owed-name">You are {linkedMember.name}</span>
               </div>
             ) : (
-              <>
-                <p className="fr-muted">Which group member are you?</p>
-                {members.length > 0 && (
-                  <div className="fr-cats">
-                    {members.map((m) => (
-                      <button key={m.id} className="fr-cat" onClick={() => linkMe(m.id)}>
-                        <span>{m.avatar}</span> {m.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <button className="fr-ghost-btn" onClick={createMe}>
-                  + I&apos;m not in the list — add me
-                </button>
-              </>
+              <p className="fr-muted">
+                Close this — you&apos;ll be asked which group member you are.
+              </p>
             )}
 
             <button className="fr-mini-btn danger" onClick={() => signOutUser()} style={{ marginTop: 4 }}>
