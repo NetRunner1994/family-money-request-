@@ -25,3 +25,15 @@ export async function setUserFamily(uid: string, code: string) {
     console.error("setUserFamily failed", e);
   }
 }
+
+/** Forget the family remembered on this account — called when leaving, so a
+ *  later sign-in doesn't automatically rejoin the family just left. */
+export async function clearUserFamily(uid: string) {
+  const db = getDb();
+  if (!db) return;
+  try {
+    await setDoc(doc(db, "users", uid), { familyCode: null }, { merge: true });
+  } catch (e) {
+    console.error("clearUserFamily failed", e);
+  }
+}
