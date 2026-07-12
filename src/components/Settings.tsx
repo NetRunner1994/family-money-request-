@@ -151,7 +151,7 @@ export function Settings({
           {otherLinkedGrownups.length === 0 ? (
             <p className="fr-muted">
               No one else has signed in and identified themselves yet. Once they
-              do (👤 button → Continue with Google), you can make them admin here.
+              sign in and pick who they are, you can make them admin here.
             </p>
           ) : (
             <>
