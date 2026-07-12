@@ -71,7 +71,7 @@ export function FriendsView({
       <div className="fr-card fr-pad fr-empty">
         <div className="fr-done-emoji">🧑‍🤝‍🧑</div>
         <p className="fr-muted">
-          Add at least two grown-ups or friends in <strong>Settings</strong> to
+          Add at least two adults or friends in <strong>Settings</strong> to
           start requesting money between each other.
         </p>
       </div>
@@ -176,7 +176,7 @@ export function FriendsView({
   );
 }
 
-function MemberChip({ m, on, onClick }: { m: Member; on: boolean; onClick: () => void }) {
+export function MemberChip({ m, on, onClick }: { m: Member; on: boolean; onClick: () => void }) {
   return (
     <button className={"fr-cat" + (on ? " on" : "")} onClick={onClick}>
       <span>{m.avatar}</span> {m.name}
@@ -209,7 +209,7 @@ function PeerCard({
         <span className="fr-kid-emoji">{to?.avatar}</span>
         <div className="fr-receipt-meta">
           <div className="fr-receipt-who">
-            <strong>{from?.name}</strong> requested from <strong>{to?.name}</strong>
+            <strong>{to?.name}</strong> owes <strong>{from?.name}</strong>
           </div>
           <div className="fr-receipt-amt sm">{fmt(req.amount)}</div>
         </div>

@@ -6,7 +6,7 @@ import type { AppData } from "../types";
 // signing in only proves who someone is; it doesn't by itself add them to
 // the family's member list. Without this forced step, people could create
 // an account and land in the full parent view while staying invisible to
-// everyone else (no name in Settings, not pickable in the Grown-ups tab).
+// everyone else (no name in Settings, not pickable in the Adults tab).
 export function LinkMemberScreen({
   data,
   update,

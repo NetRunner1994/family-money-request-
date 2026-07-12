@@ -63,7 +63,7 @@ export function FamilyGate({
             <h2 className="fr-h2">Sign in to start your family</h2>
             <p className="fr-muted">
               Whoever creates the family becomes its admin — the only one who can
-              add or remove kids and grown-ups later. Sign in so that&apos;s really you.
+              add or remove kids and adults later. Sign in so that&apos;s really you.
             </p>
             <EmailAuthForm showToast={showToast} />
           </>

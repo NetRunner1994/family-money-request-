@@ -156,7 +156,7 @@ export function Settings({
           ) : (
             <>
               <p className="fr-muted">
-                Only grown-ups who&apos;ve signed in can become admin.
+                Only adults who&apos;ve signed in can become admin.
               </p>
               {otherLinkedGrownups.map(({ signInUid, member }) =>
                 confirmingAdminUid === signInUid ? (
@@ -296,9 +296,10 @@ export function Settings({
         </>
       )}
 
-      <h3 className="fr-h3">Grown-ups &amp; friends</h3>
+      <h3 className="fr-h3">Adults &amp; friends</h3>
       <p className="fr-muted">
-        People who can request money from each other in the “Grown-ups” tab.
+        People who can send and request money between each other in the
+        Adults and Owe tabs.
         {!isAdmin && ` Only ${adminName} can add or remove people here.`}
       </p>
       {data.members.map((m) => (
@@ -328,7 +329,7 @@ export function Settings({
           <div className="fr-add-row">
             <input
               className="fr-input"
-              placeholder="Grown-up or friend's name"
+              placeholder="Adult or friend's name"
               value={memberName}
               maxLength={20}
               onChange={(e) => setMemberName(e.target.value)}
