@@ -235,6 +235,7 @@ function App() {
           data={data}
           update={update}
           user={user}
+          kidId={kidIdentity}
           kidName={myKid?.name ?? null}
           canSwitch={grownup || !!kidIdentity}
           onSwitchUser={switchUser}

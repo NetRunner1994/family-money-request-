@@ -104,6 +104,13 @@ body {
 .fr-kid-chip.on { background: var(--ink); color: #fff; transform: scale(1.05); }
 .fr-kid-emoji { font-size: 20px; }
 .fr-kid-emoji.big { font-size: 34px; }
+.fr-avatar-edit-btn {
+  background: none; border: none; padding: 2px; margin: 0; cursor: pointer;
+  border-radius: 8px; line-height: 1;
+}
+.fr-avatar-edit-btn:not(:disabled):hover,
+.fr-avatar-edit-btn:not(:disabled):focus-visible { background: var(--mint); }
+.fr-avatar-edit-btn:disabled { cursor: default; }
 
 .fr-owed {
   background: var(--sun); border-radius: 14px; padding: 12px 16px;
