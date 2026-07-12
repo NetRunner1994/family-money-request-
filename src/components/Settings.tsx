@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AVATARS, uid } from "../lib/format";
 import type { AppData } from "../types";
 import type { SyncMode } from "../hooks/useAppData";
+import { AvatarPicker } from "./AvatarPicker";
 
 export interface SyncInfo {
   mode: SyncMode;
@@ -61,6 +62,28 @@ export function Settings({
       if (k) k.pin = pin || null;
       return d;
     });
+  };
+
+  // Which existing kid/member's emoji picker is open right now — only one at
+  // a time, shared between the two lists since ids are unique across both.
+  const [editingAvatarId, setEditingAvatarId] = useState<string | null>(null);
+
+  const setKidAvatar = (id: string, a: string) => {
+    update((d) => {
+      const k = d.kids.find((x) => x.id === id);
+      if (k) k.avatar = a;
+      return d;
+    });
+    setEditingAvatarId(null);
+  };
+
+  const setMemberAvatarFor = (id: string, a: string) => {
+    update((d) => {
+      const m = d.members.find((x) => x.id === id);
+      if (m) m.avatar = a;
+      return d;
+    });
+    setEditingAvatarId(null);
   };
 
   const addMember = () => {
@@ -151,12 +174,12 @@ export function Settings({
           {otherLinkedGrownups.length === 0 ? (
             <p className="fr-muted">
               No one else has signed in and identified themselves yet. Once they
-              do (👤 button → Continue with Google), you can make them admin here.
+              sign in and pick who they are, you can make them admin here.
             </p>
           ) : (
             <>
               <p className="fr-muted">
-                Only grown-ups who&apos;ve signed in can become admin.
+                Only adults who&apos;ve signed in can become admin.
               </p>
               {otherLinkedGrownups.map(({ signInUid, member }) =>
                 confirmingAdminUid === signInUid ? (
@@ -237,40 +260,46 @@ export function Settings({
         <p className="fr-muted">Only {adminName} can add, remove, or change kids.</p>
       )}
       {data.kids.map((k) => (
-        <div key={k.id} className="fr-owed-row">
-          <span className="fr-kid-emoji">{k.avatar}</span>
-          <span className="fr-owed-name">
-            {k.name}
-            {sync.mode === "synced" && !k.pin && (
-              <span className="fr-no-pin-warning"> ⚠️ no PIN set</span>
-            )}
-          </span>
-          {sync.mode === "synced" && isAdmin && (
-            <input
-              className={"fr-input fr-kid-pin" + (k.pin ? "" : " warn")}
-              placeholder="PIN"
-              value={k.pin ?? ""}
-              inputMode="numeric"
-              maxLength={4}
-              onChange={(e) => setKidPin(k.id, e.target.value.replace(/\D/g, ""))}
-            />
-          )}
-          {isAdmin && (
-            <button className="fr-mini-btn danger" onClick={() => removeKid(k.id)}>
-              Remove
+        <div key={k.id}>
+          <div className="fr-owed-row">
+            <button
+              className="fr-kid-emoji fr-avatar-edit-btn"
+              disabled={!isAdmin}
+              onClick={() => setEditingAvatarId(editingAvatarId === k.id ? null : k.id)}
+              title={isAdmin ? "Change emoji" : undefined}
+            >
+              {k.avatar}
             </button>
+            <span className="fr-owed-name">
+              {k.name}
+              {sync.mode === "synced" && !k.pin && (
+                <span className="fr-no-pin-warning"> ⚠️ no PIN set</span>
+              )}
+            </span>
+            {sync.mode === "synced" && isAdmin && (
+              <input
+                className={"fr-input fr-kid-pin" + (k.pin ? "" : " warn")}
+                placeholder="PIN"
+                value={k.pin ?? ""}
+                inputMode="numeric"
+                maxLength={4}
+                onChange={(e) => setKidPin(k.id, e.target.value.replace(/\D/g, ""))}
+              />
+            )}
+            {isAdmin && (
+              <button className="fr-mini-btn danger" onClick={() => removeKid(k.id)}>
+                Remove
+              </button>
+            )}
+          </div>
+          {editingAvatarId === k.id && (
+            <AvatarPicker value={k.avatar} onChange={(a) => setKidAvatar(k.id, a)} />
           )}
         </div>
       ))}
       {isAdmin && (
         <>
-          <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
-            {AVATARS.map((a) => (
-              <button key={a} className={"fr-avatar-opt" + (avatar === a ? " picked" : "")} onClick={() => setAvatar(a)}>
-                {a}
-              </button>
-            ))}
-          </div>
+          <AvatarPicker value={avatar} onChange={setAvatar} style={{ marginTop: 12 }} />
           <div className="fr-add-row">
             <input
               className="fr-input"
@@ -296,39 +325,42 @@ export function Settings({
         </>
       )}
 
-      <h3 className="fr-h3">Grown-ups &amp; friends</h3>
+      <h3 className="fr-h3">Adults &amp; friends</h3>
       <p className="fr-muted">
-        People who can request money from each other in the “Grown-ups” tab.
+        People who can send and request money between each other in the
+        Adults and Owe tabs.
         {!isAdmin && ` Only ${adminName} can add or remove people here.`}
       </p>
       {data.members.map((m) => (
-        <div key={m.id} className="fr-owed-row">
-          <span className="fr-kid-emoji">{m.avatar}</span>
-          <span className="fr-owed-name">{m.name}</span>
-          {isAdmin && (
-            <button className="fr-mini-btn danger" onClick={() => removeMember(m.id)}>
-              Remove
+        <div key={m.id}>
+          <div className="fr-owed-row">
+            <button
+              className="fr-kid-emoji fr-avatar-edit-btn"
+              disabled={!isAdmin}
+              onClick={() => setEditingAvatarId(editingAvatarId === m.id ? null : m.id)}
+              title={isAdmin ? "Change emoji" : undefined}
+            >
+              {m.avatar}
             </button>
+            <span className="fr-owed-name">{m.name}</span>
+            {isAdmin && (
+              <button className="fr-mini-btn danger" onClick={() => removeMember(m.id)}>
+                Remove
+              </button>
+            )}
+          </div>
+          {editingAvatarId === m.id && (
+            <AvatarPicker value={m.avatar} onChange={(a) => setMemberAvatarFor(m.id, a)} />
           )}
         </div>
       ))}
       {isAdmin && (
         <>
-          <div className="fr-avatar-picker" style={{ marginTop: 12 }}>
-            {AVATARS.map((a) => (
-              <button
-                key={a}
-                className={"fr-avatar-opt" + (memberAvatar === a ? " picked" : "")}
-                onClick={() => setMemberAvatar(a)}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
+          <AvatarPicker value={memberAvatar} onChange={setMemberAvatar} style={{ marginTop: 12 }} />
           <div className="fr-add-row">
             <input
               className="fr-input"
-              placeholder="Grown-up or friend's name"
+              placeholder="Adult or friend's name"
               value={memberName}
               maxLength={20}
               onChange={(e) => setMemberName(e.target.value)}

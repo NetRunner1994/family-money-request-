@@ -87,7 +87,7 @@ export function WhoScreen({
         <h2 className="fr-h2">Who&apos;s using this phone?</h2>
         <p className="fr-muted">Pick yourself so the app only lets you act as you.</p>
 
-        <label className="fr-field-label">Grown-up</label>
+        <label className="fr-field-label">Adult</label>
         <EmailAuthForm showToast={showToast} />
 
         {data.kids.length > 0 && (

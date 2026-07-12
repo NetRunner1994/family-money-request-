@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AVATARS, uid } from "../lib/format";
 import type { AppData } from "../types";
+import { AvatarPicker } from "./AvatarPicker";
 
 export function Onboarding({ update }: { update: (fn: (d: AppData) => AppData) => void }) {
   const [kids, setKids] = useState([{ name: "", avatar: AVATARS[0] }]);
@@ -27,17 +28,7 @@ export function Onboarding({ update }: { update: (fn: (d: AppData) => AppData) =
         <p className="fr-muted">Add the kids. Parents get their own view for approving stuff.</p>
         {kids.map((k, i) => (
           <div key={i} className="fr-onboard-row">
-            <div className="fr-avatar-picker">
-              {AVATARS.map((a) => (
-                <button
-                  key={a}
-                  className={"fr-avatar-opt" + (k.avatar === a ? " picked" : "")}
-                  onClick={() => setKid(i, { avatar: a })}
-                >
-                  {a}
-                </button>
-              ))}
-            </div>
+            <AvatarPicker value={k.avatar} onChange={(a) => setKid(i, { avatar: a })} />
             <input
               className="fr-input"
               placeholder="Kid's name"

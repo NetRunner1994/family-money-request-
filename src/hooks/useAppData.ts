@@ -91,7 +91,7 @@ export function useAppData(user: User | null, authReady: boolean): UseAppData {
   // Subscribe to the family document in synced mode. Waits for authReady so
   // it never fires before Firebase has finished restoring a saved sign-in —
   // otherwise this could kick off an anonymous session (for kid devices)
-  // that wins the race and overwrites a real Google session on every reload.
+  // that wins the race and overwrites a real signed-in session on every reload.
   useEffect(() => {
     if (!firebaseEnabled || !familyCode || !authReady) return;
     let unsub: (() => void) | undefined;

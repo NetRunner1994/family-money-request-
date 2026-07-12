@@ -69,7 +69,7 @@ function App() {
 
   const needsFamily = syncAvailable && !familyCode;
 
-  // Identity (login mode): a signed-in Google user is always a grown-up; a
+  // Identity (login mode): a signed-in user is always a grown-up; a
   // device with a stored kid id (and no grown-up session) is that kid.
   const grownup = firebaseEnabled && !!user;
   const kidIdentity =
@@ -235,6 +235,7 @@ function App() {
           data={data}
           update={update}
           user={user}
+          kidId={kidIdentity}
           kidName={myKid?.name ?? null}
           canSwitch={grownup || !!kidIdentity}
           onSwitchUser={switchUser}

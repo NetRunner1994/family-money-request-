@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { signOutUser, type User } from "../lib/auth";
 import type { AppData } from "../types";
+import { AvatarPicker } from "./AvatarPicker";
 import { EmailAuthForm } from "./EmailAuthForm";
 
 export function AccountSheet({
   data,
+  update,
   user,
+  kidId,
   kidName,
   canSwitch,
   onSwitchUser,
@@ -14,14 +18,39 @@ export function AccountSheet({
   data: AppData | null;
   update: (fn: (d: AppData) => AppData) => void;
   user: User | null;
+  kidId?: string | null;
   kidName?: string | null;
   canSwitch?: boolean;
   onSwitchUser?: () => void;
   showToast: (msg: string) => void;
   onClose: () => void;
 }) {
+  const [editingAvatar, setEditingAvatar] = useState(false);
   const linkedMemberId = user && data ? data.memberAuth[user.uid] : undefined;
   const linkedMember = data?.members.find((m) => m.id === linkedMemberId);
+  const kid = kidId && data ? data.kids.find((k) => k.id === kidId) : undefined;
+
+  const changeKidAvatar = (a: string) => {
+    if (!kid) return;
+    update((d) => {
+      const k = d.kids.find((x) => x.id === kid.id);
+      if (k) k.avatar = a;
+      return d;
+    });
+    setEditingAvatar(false);
+    showToast("Emoji updated 🎨");
+  };
+
+  const changeMemberAvatar = (a: string) => {
+    if (!linkedMember) return;
+    update((d) => {
+      const m = d.members.find((x) => x.id === linkedMember.id);
+      if (m) m.avatar = a;
+      return d;
+    });
+    setEditingAvatar(false);
+    showToast("Emoji updated 🎨");
+  };
 
   return (
     <div className="fr-overlay" onClick={onClose}>
@@ -32,11 +61,23 @@ export function AccountSheet({
 
         {kidName ? (
           <>
-            <p className="fr-muted">
-              You&apos;re using this phone as <strong>{kidName}</strong>.
-            </p>
+            <div className="fr-owed-row">
+              {kid && (
+                <button
+                  className="fr-kid-emoji fr-avatar-edit-btn"
+                  onClick={() => setEditingAvatar((v) => !v)}
+                  title="Change emoji"
+                >
+                  {kid.avatar}
+                </button>
+              )}
+              <span className="fr-owed-name">
+                You&apos;re using this phone as <strong>{kidName}</strong>.
+              </span>
+            </div>
+            {editingAvatar && kid && <AvatarPicker value={kid.avatar} onChange={changeKidAvatar} />}
             {onSwitchUser && canSwitch && (
-              <button className="fr-mini-btn danger" onClick={onSwitchUser}>
+              <button className="fr-mini-btn danger" onClick={onSwitchUser} style={{ marginTop: 8 }}>
                 Switch user
               </button>
             )}
@@ -58,17 +99,28 @@ export function AccountSheet({
             {!data ? (
               <p className="fr-muted">Join or start a family to finish setting up who you are.</p>
             ) : linkedMember ? (
-              <div className="fr-owed-row">
-                <span className="fr-kid-emoji">{linkedMember.avatar}</span>
-                <span className="fr-owed-name">You are {linkedMember.name}</span>
-              </div>
+              <>
+                <div className="fr-owed-row">
+                  <button
+                    className="fr-kid-emoji fr-avatar-edit-btn"
+                    onClick={() => setEditingAvatar((v) => !v)}
+                    title="Change emoji"
+                  >
+                    {linkedMember.avatar}
+                  </button>
+                  <span className="fr-owed-name">You are {linkedMember.name}</span>
+                </div>
+                {editingAvatar && (
+                  <AvatarPicker value={linkedMember.avatar} onChange={changeMemberAvatar} />
+                )}
+              </>
             ) : (
               <p className="fr-muted">
                 Close this — you&apos;ll be asked which group member you are.
               </p>
             )}
 
-            <button className="fr-mini-btn danger" onClick={() => signOutUser()} style={{ marginTop: 4 }}>
+            <button className="fr-mini-btn danger" onClick={() => signOutUser()} style={{ marginTop: 8 }}>
               Sign out
             </button>
           </>
