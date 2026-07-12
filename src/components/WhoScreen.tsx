@@ -7,14 +7,17 @@ export function WhoScreen({
   data,
   onPickKid,
   showToast,
+  onLeaveFamily,
 }: {
   data: AppData;
   onPickKid: (kidId: string) => void;
   showToast: (msg: string) => void;
+  onLeaveFamily?: () => void;
 }) {
   const [pinKid, setPinKid] = useState<Kid | null>(null);
   const [entry, setEntry] = useState("");
   const [shake, setShake] = useState(false);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
 
   const pickKid = (kid: Kid) => {
     if (kid.pin) {
@@ -109,6 +112,34 @@ export function WhoScreen({
                 ⚠️ Kids without a PIN can&apos;t sign in yet — an admin needs to set
                 one in Settings first.
               </p>
+            )}
+          </>
+        )}
+
+        {onLeaveFamily && (
+          <>
+            {confirmingLeave ? (
+              <div className="fr-confirm-row" style={{ marginTop: 16 }}>
+                <span className="fr-muted" style={{ margin: 0 }}>
+                  Leave this family on this phone? You can rejoin with the code.
+                </span>
+                <div className="fr-add-row">
+                  <button className="fr-mini-btn" onClick={() => setConfirmingLeave(false)}>
+                    Cancel
+                  </button>
+                  <button className="fr-mini-btn danger" onClick={onLeaveFamily}>
+                    Yes, leave
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="fr-ghost-btn"
+                style={{ marginTop: 16 }}
+                onClick={() => setConfirmingLeave(true)}
+              >
+                Wrong family? Use a different code
+              </button>
             )}
           </>
         )}

@@ -127,7 +127,10 @@ function App() {
 
     // ---- Login mode: identity decides the whole experience ----
     if (firebaseEnabled) {
-      if (needsIdentity) return <WhoScreen data={data} onPickKid={pickKid} showToast={showToast} />;
+      if (needsIdentity)
+        return (
+          <WhoScreen data={data} onPickKid={pickKid} showToast={showToast} onLeaveFamily={leaveFamily} />
+        );
       if (needsMemberLink && user)
         return <LinkMemberScreen data={data} update={update} user={user} showToast={showToast} />;
       if (kidIdentity)
