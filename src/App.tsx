@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import logoMark from "./assets/logo-mark.svg";
 import { FamilyGate } from "./components/FamilyGate";
 import { InstallPrompt } from "./components/InstallPrompt";
 import { KidView } from "./components/KidView";
@@ -187,7 +188,7 @@ function App() {
     <div className="fr-app">
       <header className="fr-header">
         <div className="fr-logo">
-          <span className="fr-logo-coin">🪙</span>
+          <img className="fr-logo-mark" src={logoMark} alt="" width={200} height={200} />
           <div>
             <div className="fr-logo-name">Family Tab</div>
             <div className="fr-logo-sub">ask, explain, get a yes (maybe)</div>
