@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
-  <rect width="200" height="200" rx="44" fill="#EFF5EE"/>
+  <rect width="200" height="200" rx="44" fill="#00B24A"/>
 
   <path d="M76 28 h58 l12 12 v66 h-70 z" fill="#FBF3E3"/>
-  <path d="M134 28 l12 12 h-12 z" fill="#E9DFC6"/>
-  <text x="94" y="58" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="22" fill="#6E9C6E" text-anchor="middle">$</text>
-  <rect x="82" y="68" width="52" height="6" rx="3" fill="#6E9C6E"/>
-  <rect x="82" y="80" width="52" height="6" rx="3" fill="#6E9C6E"/>
-  <rect x="82" y="92" width="38" height="6" rx="3" fill="#6E9C6E"/>
+  <path d="M134 28 l12 12 h-12 z" fill="#DCDCDC"/>
+  <text x="94" y="58" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="22" fill="#5B5F6B" text-anchor="middle">$</text>
+  <rect x="82" y="68" width="52" height="6" rx="3" fill="#5B5F6B"/>
+  <rect x="82" y="80" width="52" height="6" rx="3" fill="#5B5F6B"/>
+  <rect x="82" y="92" width="38" height="6" rx="3" fill="#5B5F6B"/>
 
-  <path d="M40 112 q0 -18 18 -18 h20 v16 q0 10 -10 10 h-10 q-10 0 -10 10 z" fill="#7CA37A"/>
-  <rect x="40" y="104" width="120" height="80" rx="16" fill="#8CB08A"/>
-  <line x1="52" y1="118" x2="148" y2="118" stroke="#EFF5EE" stroke-width="2.5" stroke-dasharray="4 5" opacity="0.75" stroke-linecap="round"/>
-  <line x1="52" y1="170" x2="148" y2="170" stroke="#EFF5EE" stroke-width="2.5" stroke-dasharray="4 5" opacity="0.75" stroke-linecap="round"/>
+  <path d="M40 112 q0 -18 18 -18 h20 v16 q0 10 -10 10 h-10 q-10 0 -10 10 z" fill="#494D59"/>
+  <rect x="40" y="104" width="120" height="80" rx="16" fill="#5B5F6B"/>
+  <line x1="52" y1="118" x2="148" y2="118" stroke="#D9DCE2" stroke-width="2.5" stroke-dasharray="4 5" opacity="0.85" stroke-linecap="round"/>
+  <line x1="52" y1="170" x2="148" y2="170" stroke="#D9DCE2" stroke-width="2.5" stroke-dasharray="4 5" opacity="0.85" stroke-linecap="round"/>
 
-  <rect x="146" y="126" width="28" height="34" rx="12" fill="#7CA37A"/>
-  <circle cx="151" cy="143" r="14" fill="#6E9C6E"/>
-  <circle cx="151" cy="143" r="6" fill="#EFF5EE"/>
+  <rect x="146" y="126" width="28" height="34" rx="12" fill="#494D59"/>
+  <circle cx="151" cy="143" r="14" fill="#3D404A"/>
+  <circle cx="151" cy="143" r="6" fill="#F0F1F3"/>
 </svg>
