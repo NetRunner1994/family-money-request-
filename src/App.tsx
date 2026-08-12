@@ -120,7 +120,7 @@ function App() {
       return (
         <main className="fr-main">
           <div className="fr-card fr-pad fr-empty">
-            <div className="fr-done-emoji">🔄</div>
+            <div className="fr-done-emoji fr-spin">🔄</div>
             <p className="fr-muted">Connecting to your family…</p>
           </div>
         </main>
@@ -190,7 +190,7 @@ function App() {
         <div className="fr-logo">
           <img className="fr-logo-mark" src={logoMark} alt="" width={200} height={200} />
           <div>
-            <div className="fr-logo-name">Family Tab</div>
+            <h1 className="fr-logo-name">Family Tab</h1>
             <div className="fr-logo-sub">ask, explain, get a yes (maybe)</div>
           </div>
         </div>
